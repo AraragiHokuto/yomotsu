@@ -1,22 +1,20 @@
-AS=$(LLVM_PREFIX)/bin/clang
-CC=$(LLVM_PREFIX)/bin/clang
-LD=$(LLVM_PREFIX)/bin/clang
-CFLAGS=--target=x86_64-pc-orihime-elf -Wall -Wextra -std=gnu99 -I../ -I../libc -I../libc/cstd -static -nostdlib -nostdlibinc -fno-pie -g -Wno-unused-function -Wno-sign-compare
-LDFLAGS=--target=x86_64-pc-orihime-elf -nostdlib -fno-pie -static -L../../build/libc -lorihime
+AS=as
+CC=clang
+LD=clang
+CFLAGS=-target x86_64-pc-none-elf -ffreestanding -Wall -Wextra -std=gnu99 -I./ -static -nostdlib -nostdinc -fno-pie -mno-implicit-float -g -mno-red-zone -Wno-unused-function -Wno-sign-compare -fno-omit-frame-pointer -I../
+LDFLAGS=-target x86_64-pc-none-elf -ffreestanding -nostdlib -z max-page-size=0x1000 -fno-pie -static -mcmodel=kernel
 
-init: stub_proc_bin.o init.c.o start.s.o ../../build/libc/liborihime.a
-	$(LD) -Wl,-Tlinker.ld -o $@ stub_proc_bin.o init.c.o start.s.o $(LDFLAGS)
+OBJS=$(patsubst %.s,%_s.o,$(wildcard *.s)) $(patsubst %.c,%_c.o,$(wildcard *.c))
 
-stub_proc_bin.o: stub_proc.c ../../build/libc/liborihime.a
-	$(CC) $(CFLAGS) -Wl,-Tstubproc_linker.ld -ostub_proc_bin stub_proc.c $(LDFLAGS)
-	objcopy -I binary -O elf64-x86-64 -B i386:x86-64 stub_proc_bin stub_proc_bin.o
+init: $(OBJS)
+	$(LD) $(LDFLAGS) -Wl,-Tlinker.ld -o $@ $(OBJS)
 
-start.s.o: start.s
-	$(AS) -c --target=x86_64-pc-orihime-elf start.s -ostart.s.o
+%_c.o: %.c
+	$(CC) -c -o $@ $(CFLAGS) $<
 
-init.c.o: init.c
-	$(CC) $(CFLAGS) -c -oinit.c.o init.c
+%_s.o: %.s
+	$(AS) -o $@ $<
 
 clean: FORCE
-	rm -rf *.o init stub_proc_bin
+	rm -rf *.o init
 FORCE:

@@ -337,7 +337,7 @@ irq_common:
 
 	movq	0x18(%rsp), %rsi
 	cmpq	$0x08, %rsi
-	je	_noswapgs_3
+	jne	_noswapgs_3
 	swapgs
 
 _noswapgs_3:

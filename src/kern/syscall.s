@@ -43,8 +43,6 @@ __syscall_entry_valid:
 	popq	%rdx
 	popq	%rcx
 
-	xorq	%rsp, %rsp
-
 	swapgs
 	sysretq
 
@@ -61,8 +59,6 @@ __reincarnate_return:
 	popq	%r11
 	orq	$(1 << 9), %r11
 
-	xorq	%rsp, %rsp
-
 	swapgs
 	sysretq
 
@@ -78,8 +74,6 @@ __process_spawn_start:
 	popq	%rcx
 	popq	%r11
 	orq	$(1 << 9), %r11
-
-	xorq	%rsp, %rsp
 
 	swapgs
 	sysretq

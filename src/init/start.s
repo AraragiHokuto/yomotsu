@@ -2,18 +2,21 @@
 
 .global	_stack_end
 _stack:
-.skip	8388608
+.skip	16384
 _stack_end:
 
 .section	.text
-.global	__init_start
-.type	__init_start, @function
-__init_start:
+.global	_start
+.type	_start, @function
+_start:
 	movabs	$_stack_end, %rsp
 	xorq	%rbp, %rbp
 	pushq	%rbp
 
-	call	__init_main
+	call	main
+
+	movq	%rax, %rdi
+	call	process_exit
 
 	# should not reach here
 	xchgw	%bx, %bx

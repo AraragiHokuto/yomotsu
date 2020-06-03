@@ -1,6 +1,8 @@
-# ORIHIME
+# ORIHIME - Milestone 1
 
-## Current Status: Milestone 1
+This is the main dev branch of milestone 1.
+
+## Goal
 
 The goal of milestone 1 is to produce a minimum *Operating System* (rather than a just a naked kernel). 
 
@@ -13,11 +15,6 @@ To be more specifically, there should be:
 - Orihime-Specific Cross-Compiling Toolchain (binutils, gcc and/or llvm)
 
 - Libc (enough to support components above)
-
-## Build Instruction
-
-+ Build & install llvm-orihime[AraragiHokuto/llvm-orihime] for cross compilation
-+ `make LLVM_PREIFX=your-llvm-prefix`
 
 ## How to contribute
 
