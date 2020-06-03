@@ -1,0 +1,7 @@
+.ccls*
+isodir/
+*.iso
+**/*.o
+**/*.bin
+**/*.psfu
+build/*
