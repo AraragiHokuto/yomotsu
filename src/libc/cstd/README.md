@@ -23,28 +23,28 @@
 * Headers with no function listed is considered less priority
 
 - assert.h
-    - [x] `assert`
-	- [x] `static assert`
+    - [ ] `assert`
+	- [ ] `static assert`
 - ctype.h
-    - [x] `isanum`
-	- [x] `isalpha`
-	- [x] `isblank`
-	- [x] `iscntrl`
-	- [x] `isdigit`
-	- [x] `isgraph`
-	- [x] `islower`
-	- [x] `isprint`
-	- [x] `ispunct`
-	- [x] `isspace`
-	- [x] `isupper`
-	- [x] `isxdigit`
-	- [x] `tolower`
-	- [x] `toupper`
+    - [ ] `isanum`
+	- [ ] `isalpha`
+	- [ ] `isblank`
+	- [ ] `iscntrl`
+	- [ ] `isdigit`
+	- [ ] `isgraph`
+	- [ ] `islower`
+	- [ ] `isprint`
+	- [ ] `ispunct`
+	- [ ] `isspace`
+	- [ ] `isupper`
+	- [ ] `isxdigit`
+	- [ ] `tolower`
+	- [ ] `toupper`
 - errno.h
-    - [x] `EDOM`
-	- [x] `ELISEQ`
-	- [x] `ERANGE`
-	- [x] `errno`
+    - [ ] `EDOM`
+	- [ ] `ELISEQ`
+	- [ ] `ERANGE`
+	- [ ] `errno`
 - fenv.h
 - locale.h
 - math.h
@@ -53,11 +53,11 @@
 	- [ ] `longjmp`
 - signal.h
 - stdio.h
-    - [x] `FILE`
+    - [ ] `FILE`
 	- [ ] `fpos_t`
-	- [x] `_IOFBF`
-	- [x] `_IOLBF`
-	- [x] `_IONBF`
+	- [ ] `_IOFBF`
+	- [ ] `_IOLBF`
+	- [ ] `_IONBF`
 	- [ ] `BUFSIZ`
 	- [ ] `EOF`
 	- [ ] `FOPEN_MAX`
@@ -67,9 +67,9 @@
 	- [ ] `SEEK_END`
 	- [ ] `SEEK_SET`
 	- [ ] `TMP_MAX`
-	- [x] `stderr`
+	- [ ] `stderr`
 	- [ ] `stdin`
-	- [x] `stdout`
+	- [ ] `stdout`
 	- [ ] `remove`
 	- [ ] `rename`
 	- [ ] `tmpfile`
@@ -80,14 +80,14 @@
 	- [ ] `freopen`
 	- [ ] `setbuf`
 	- [ ] `setvbuf`
-	- [x] `fprintf`
-	- [x] `printf`
-	- [x] `snprintf`
-	- [x] `sprintf`
-	- [x] `vfprintf`
-	- [x] `vprintf`
-	- [x] `vsnprintf`
-	- [x] `vsprintf`
+	- [ ] `fprintf`
+	- [ ] `printf`
+	- [ ] `snprintf`
+	- [ ] `sprintf`
+	- [ ] `vfprintf`
+	- [ ] `vprintf`
+	- [ ] `vsnprintf`
+	- [ ] `vsprintf`
 	- [ ] `fscanf`
 	- [ ] `scanf`
 	- [ ] `sscanf`
@@ -114,15 +114,15 @@
 	- [ ] `clearerr`
 	- [ ] `feof`
 	- [ ] `ferror`
-	- [x] `perror`
+	- [ ] `perror`
 - stdlib.h
-    - [x] `div_t`
-    - [x] `ldiv_t`
-	- [x] `lldiv_t`
-	- [x] `EXIT_FAILURE`
-	- [x] `EXIT_SUCCESS`
-	- [x] `RAND_MAX`
-	- [x] `MB_CUR_MAX`
+    - [ ] `div_t`
+    - [ ] `ldiv_t`
+	- [ ] `lldiv_t`
+	- [ ] `EXIT_FAILURE`
+	- [ ] `EXIT_SUCCESS`
+	- [ ] `RAND_MAX`
+	- [ ] `MB_CUR_MAX`
     - [ ] `atof`
 	- [ ] `atoi`
 	- [ ] `atol`
@@ -130,57 +130,57 @@
 	- [ ] `strtod`
 	- [ ] `strtof`
 	- [ ] `strtold`
-	- [x] `rand`
-	- [x] `srand`
-	- [x] `aligned_alloc`
-	- [x] `calloc`
-	- [x] `free`
-	- [x] `malloc`
-	- [x] `realloc`
-	- [x] `abort`
-	- [x] `atexit`
-	- [x] `at_quick_exit`
-	- [x] `exit`
-	- [x] `_Exit`
-	- [x] `getenv`
-	- [x] `quick_exit`
-	- [x] `system`
+	- [ ] `rand`
+	- [ ] `srand`
+	- [ ] `aligned_alloc`
+	- [ ] `calloc`
+	- [ ] `free`
+	- [ ] `malloc`
+	- [ ] `realloc`
+	- [ ] `abort`
+	- [ ] `atexit`
+	- [ ] `at_quick_exit`
+	- [ ] `exit`
+	- [ ] `_Exit`
+	- [ ] `getenv`
+	- [ ] `quick_exit`
+	- [ ] `system`
 	- [ ] `bsearch`
 	- [ ] `qsort`
-	- [x] `abs`
-	- [x] `labs`
-	- [x] `llabs`
-	- [x] `div`
-	- [x] `ldiv`
-	- [x] `lldiv`
-	- [x] `mblen`
-	- [x] `mbtowc`
-	- [x] `wctomb`
-	- [x] `mbstowcs`
-	- [x] `wcstombs`
+	- [ ] `abs`
+	- [ ] `labs`
+	- [ ] `llabs`
+	- [ ] `div`
+	- [ ] `ldiv`
+	- [ ] `lldiv`
+	- [ ] `mblen`
+	- [ ] `mbtowc`
+	- [ ] `wctomb`
+	- [ ] `mbstowcs`
+	- [ ] `wcstombs`
 - string.h
-    - [x] `memcpy`
-	- [x] `memmove`
-	- [x] `strcpy`
-	- [x] `strncpy`
-	- [x] `strcat`
-	- [x] `strncat`
-	- [x] `memcmp`
-	- [x] `strcmp`
-	- [x] `strcoll`
-	- [x] `strncmp`
-	- [x] `strxfrm`
-	- [x] `memchr`
-	- [x] `strchr`
-	- [x] `strcspn`
-	- [x] `strpbrk`
-	- [x] `strrchr`
-	- [x] `strspn`
-	- [x] `strstr`
-	- [x] `strtok`
-	- [x] `memset`
-	- [x] `strerror`
-	- [x] `strlen`
+    - [ ] `memcpy`
+	- [ ] `memmove`
+	- [ ] `strcpy`
+	- [ ] `strncpy`
+	- [ ] `strcat`
+	- [ ] `strncat`
+	- [ ] `memcmp`
+	- [ ] `strcmp`
+	- [ ] `strcoll`
+	- [ ] `strncmp`
+	- [ ] `strxfrm`
+	- [ ] `memchr`
+	- [ ] `strchr`
+	- [ ] `strcspn`
+	- [ ] `strpbrk`
+	- [ ] `strrchr`
+	- [ ] `strspn`
+	- [ ] `strstr`
+	- [ ] `strtok`
+	- [ ] `memset`
+	- [ ] `strerror`
+	- [ ] `strlen`
 - time.h
 - uchar.h
 - wchar.h
