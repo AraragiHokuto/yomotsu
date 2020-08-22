@@ -9,7 +9,9 @@ error_out() {
 
 find_as() {
     echo -n "Looking for assembler..."
-    if command -v x86_64-elf-as &> /dev/null; then
+    if command -v clang &> /dev/null; then
+	AS=clang
+    elif command -v x86_64-elf-as &> /dev/null; then
 	AS=x86_64-elf-as
     elif command -v as &> /dev/null; then
 	AS=as
@@ -73,12 +75,19 @@ else
     CFLAGS="$CFLAGS -O2"
 fi
 
+if [ $AS = "clang" ]; then
+    ASFLAGS="-target x86_64-pc-none-elf -c"
+else
+    ASFLAGS=""
+fi
+
 echo "Configuration: "
+echo "	TARGET	$TARGET"
 echo "	AS	$AS"
 echo "	CC	$CC"
+echo "	ASFLAGS	$ASFLAGS"
 echo "	CFLAGS	$CFLAGS"
 echo "	LDFLAGS	$LDFLAGS"
-echo "	TARGET	$TARGET"
 
 mkdir -p build/kern
 
@@ -88,6 +97,7 @@ gen_kernel_makefile() {
 AS=$AS
 CC=$CC
 LD=$CC
+ASFLAGS=$ASFLAGS
 CFLAGS=$CFLAGS
 LDFLAGS=$LDFLAGS
 
@@ -122,7 +132,7 @@ EOF
 	echo "Generating $i"
 	echo "$(basename $i).o: $i" >> Makefile
 	echo "	@echo \"	AS	$(basename $i).o\"" >> Makefile
-	echo "	@\$(AS) -o $(basename $i).o $i" >> Makefile
+	echo "	@\$(AS) \$(ASFLAGS) -o $(basename $i).o $i" >> Makefile
     done
 
     popd
