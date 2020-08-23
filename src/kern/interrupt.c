@@ -577,6 +577,8 @@ irq_handler(u64 irq)
 	irq_handler_t h	= PERCPU.irq_handlers[irq - IRQ_OFFSET];
 	if (h) {
 		h(irq);
+	} else {
+		kprintf("unhandled irq: %d\n", irq);
 	}
 
 	apic_write_reg(APIC_REG_EOI, 0);
@@ -596,39 +598,6 @@ interrupt_clear_handler(u64 vector)
 	VERIFY(vector >= IRQ_OFFSET && vector < IDT_GATES,
 	       "vector out of range");
 	PERCPU.irq_handlers[vector - IRQ_OFFSET] = NULL;
-}
-
-void
-interrupt_defer(irq_defer_callback_t callback,
-		void *data)
-{
-	irq_defer_queue_t element	= {
-		.callback	= callback,
-		.data	= data
-	};
-
-	INTERRUPT_CRITICAL_BEGIN {
-		defer_queue_push(&element);
-	} INTERRUPT_CRITICAL_END;
-}
-
-void
-irq_run_defer(void)
-{
-	while (1) {
-		interrupt_disable_preemption();
-
-		if (defer_queue_empty()) {
-			interrupt_enable_preemption();
-			return;
-		}
-
-		irq_defer_queue_t element;
-		defer_queue_pop(&element);
-
-		interrupt_enable_preemption();
-		element.callback(element.data);
-	}
 }
 
 void
