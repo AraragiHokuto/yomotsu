@@ -890,7 +890,7 @@ kmem_heap_init(void)
 
 	list_head_init(&chunk_list_head);
 
-	first_chunk->size	= KMEM_PAGE_SIZE;
+	first_chunk->size	= KMEM_PAGE_SIZE - sizeof(kheap_chunk_t);
 	first_chunk->magic	= KHEAP_MAGIC_FREE;
 
 	list_insert(&first_chunk->chunk_list_node, &chunk_list_head);
@@ -914,7 +914,7 @@ kheap_expand(size_t min_expand_size)
 
 	if (!chunk) return B_FALSE;
 
-	chunk->size	= ALIGNUP(min_expand_size, KMEM_PAGE_SIZE);
+	chunk->size	= ALIGNUP(min_expand_size, KMEM_PAGE_SIZE) - sizeof(kheap_chunk_t);
 	chunk->magic	= KHEAP_MAGIC_FREE;
 
 	list_insert(&chunk->chunk_list_node, chunk_list_head.prev);
@@ -957,8 +957,8 @@ kmem_alloc(size_t size)
 	if (p->size - size >= KHEAP_CHUNK_MIN_SIZE + sizeof(kheap_chunk_t)) {
 		/* split chunk */
 		byte *_new_chunk = (void*)p;
-		_new_chunk += size;
 		_new_chunk += sizeof(kheap_chunk_t);
+		_new_chunk += size;
 
 		kheap_chunk_t *new_chunk = (void*)_new_chunk;
 		new_chunk->size		= p->size - size - sizeof(*new_chunk);
@@ -973,7 +973,11 @@ kmem_alloc(size_t size)
 	p->magic	= KHEAP_MAGIC_ALLOCATED;
 
 	mutex_release(&kheap_lock);
-	return (void*)(((byte*)p) + sizeof(kheap_chunk_t));
+	void *ret	= (void*)(((byte*)p) + sizeof(kheap_chunk_t));
+	if ((uintptr)ret == 0xffffffff8207d5a0) {
+		kprintf("ret = 0x%x, p = 0x%x\n", ret, p);
+	}
+	return ret;
 }
 
 void *
@@ -1003,6 +1007,7 @@ kmem_alloc_aligned(size_t size, size_t align)
 		return ret;
 	}
 
+	ASSERT((u64)ret - (u64)ptr < align);
 	ASSERT((u64)ret - (u64)ptr >= sizeof(kheap_aligned_header_t));
 
 	kheap_aligned_header_t *h	= (void*)((byte*)ret
@@ -1020,6 +1025,7 @@ kheap_merge_chunk_into_prev(kheap_chunk_t *chunk)
 	kheap_chunk_t *prev	= CONTAINER_OF(chunk->chunk_list_node.prev,
 					       kheap_chunk_t, chunk_list_node);
 
+	list_remove(&chunk->chunk_list_node);
 	prev->size += chunk->size;
 	prev->size += sizeof(kheap_chunk_t);
 
@@ -1046,7 +1052,7 @@ kmem_free(void *ptr)
 
 	kheap_chunk_t *chunk	= kheap_chunk_from_ptr(ptr);
 	VERIFY(chunk->magic == KHEAP_MAGIC_ALLOCATED,
-		"invalid free");
+	       "invalid free: got magic %x for 0x%x", chunk->magic, chunk);
 
 	/* mark chunk as free */
 	chunk->magic	= KHEAP_MAGIC_FREE;

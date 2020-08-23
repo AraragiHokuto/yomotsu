@@ -335,6 +335,7 @@ port_open(const char *name, size_t namelen, int *error)
 				_port_free(port);
 			}
 			kmem_free(ref);
+			return NULL;
 		}
 
                 if (!atomic_load_uint(port->waiting_server_count,
@@ -528,7 +529,6 @@ port_receive(port_server_ref_t *ref, void *buf, size_t buflen)
 		/* TODO: timeout */
 		if (LIKELY(!ref->req)) {
 			futex_kwait((void *)&ref->req, 0);
-			kprintf("kwake");
 		}
 
 		port_request_t *ret	= ref->req;
