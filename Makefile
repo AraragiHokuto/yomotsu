@@ -6,7 +6,7 @@ all: kernel
 
 kernel: build/kern/kernel.bin
 build/kern/kernel.bin: FORCE
-	./configure
+	./src/kern/configure
 	make -C build/kern
 
 src/init/init: FORCE
