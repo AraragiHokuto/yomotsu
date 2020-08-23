@@ -31,10 +31,10 @@ mmap(kobject_handler_t as, u64 addr, u64 size, uint flag)
 }
 
 long
-mshare(kobject_handler_t das, kobject_handler_t sas,
-       uintptr vaddr_d, uintptr vaddr_s, size_t size, uint flag)
+mtransfer(kobject_handler_t das, kobject_handler_t sas,
+	  uintptr vaddr_d, uintptr vaddr_s, size_t size, uint flag)
 {
-	return __do_syscall(SYSCALL_MSHARE, das, sas,
+	return __do_syscall(SYSCALL_MTRANSFER, das, sas,
 			    vaddr_d, vaddr_s, size, flag);
 }
 
