@@ -67,7 +67,7 @@ ForEachMacros:
   - BOOST_FOREACH
 IncludeBlocks:   Regroup
 IncludeCategories:
-  - Regex:           '^"(kern|libos)/'
+  - Regex:           '^"(kern)/'
     Priority:        2
     SortPriority:    0
   - Regex:           '.*'
@@ -77,7 +77,7 @@ IncludeIsMainRegex: '(Test)?$'
 IncludeIsMainSourceRegex: ''
 IndentCaseLabels: false
 IndentGotoLabels: false
-IndentPPDirectives: None
+IndentPPDirectives: BeforeHash
 IndentWidth: 8
 IndentWrappedFunctionNames: false
 KeepEmptyLinesAtTheStartOfBlocks: false

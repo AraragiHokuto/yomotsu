@@ -1,5 +1,5 @@
-#include <kern/string.h>
 #include <kern/macrodef.h>
+#include <kern/string.h>
 
 /*
  * Scan a string pointed to by str, return number of chars
@@ -10,13 +10,11 @@
 size_t
 kstrlen(size_t max_scan, const char *str)
 {
-	size_t ret = 0;
-	for (; ret < max_scan; ++ret) {
-		if (str[ret] == '\0') {
-			break;
-		}
-	}
-	return ret;
+        size_t ret = 0;
+        for (; ret < max_scan; ++ret) {
+                if (str[ret] == '\0') { break; }
+        }
+        return ret;
 }
 
 /*
@@ -27,20 +25,16 @@ kstrlen(size_t max_scan, const char *str)
 boolean
 kstrequ(size_t max_scan, const char *a, const char *b)
 {
-	size_t sa = kstrlen(max_scan, a);
-	size_t sb = kstrlen(max_scan, b);
+        size_t sa = kstrlen(max_scan, a);
+        size_t sb = kstrlen(max_scan, b);
 
-	if (sa != sb) {
-		return B_FALSE;
-	}
+        if (sa != sb) { return B_FALSE; }
 
-	for (size_t i = 0; i < sa; ++i) {
-		if (a[i] != b[i]) {
-			return B_FALSE;
-		}
-	}
+        for (size_t i = 0; i < sa; ++i) {
+                if (a[i] != b[i]) { return B_FALSE; }
+        }
 
-	return B_TRUE;
+        return B_TRUE;
 }
 
 /*
@@ -51,14 +45,12 @@ kstrequ(size_t max_scan, const char *a, const char *b)
 size_t
 kstrcpy(size_t max_copy, char *dst, const char *src)
 {
-	size_t src_len	= kstrlen(max_copy, src);
-	if (src_len == max_copy) {
-		return (size_t)-1;
-	}
+        size_t src_len = kstrlen(max_copy, src);
+        if (src_len == max_copy) { return (size_t)-1; }
 
-	kmemcpy(dst, src, src_len);
-	dst[src_len + 1]	= '\0';
-	return src_len;
+        kmemcpy(dst, src, src_len);
+        dst[src_len + 1] = '\0';
+        return src_len;
 }
 
 /*
@@ -67,25 +59,19 @@ kstrcpy(size_t max_copy, char *dst, const char *src)
 size_t
 kstr_hash(const char *str, size_t strlen)
 {
-	size_t ret	= 0;
-	for (size_t i = 0; i < strlen; ++i) {
-		ret	= (ret << 5) + ret + str[i];
-	}
-	return ret;
+        size_t ret = 0;
+        for (size_t i = 0; i < strlen; ++i) { ret = (ret << 5) + ret + str[i]; }
+        return ret;
 }
 
 static void
 __do_memcpy(void *dst, const void *src, size_t size)
 {
-	/* TODO?: Better implementation for older CPU */
-	asm volatile("rep movsb"
-		     : "=D" (dst),
-		       "=S" (src),
-		       "=c" (size)
-		     : "0" (dst),
-		       "1" (src),
-		       "2" (size)
-		     : "memory");
+        /* TODO?: Better implementation for older CPU */
+        asm volatile("rep movsb"
+                     : "=D"(dst), "=S"(src), "=c"(size)
+                     : "0"(dst), "1"(src), "2"(size)
+                     : "memory");
 }
 
 /*
@@ -96,14 +82,14 @@ __do_memcpy(void *dst, const void *src, size_t size)
 void
 kmemcpy(void *dst, const void *src, size_t size)
 {
-	uintptr _dst	= (uintptr)dst;
-	uintptr _src	= (uintptr)src;
+        uintptr _dst = (uintptr)dst;
+        uintptr _src = (uintptr)src;
 
-	/* Ensure memory does not overlap */
-	ASSERT(!((_src >= _dst) && (_src < _dst + size)));
-	ASSERT(!((_dst >= _src) && (_dst < _src + size)));
+        /* Ensure memory does not overlap */
+        ASSERT(!((_src >= _dst) && (_src < _dst + size)));
+        ASSERT(!((_dst >= _src) && (_dst < _src + size)));
 
-	__do_memcpy(dst, src, size);
+        __do_memcpy(dst, src, size);
 }
 
 /*
@@ -114,23 +100,23 @@ kmemcpy(void *dst, const void *src, size_t size)
 void
 kmemmov(void *dst, const void *src, size_t size)
 {
-	/* if dst overlaps with src */
-	byte *_dst	= (byte*)dst;
-	byte *_src	= (byte*)src;
+        /* if dst overlaps with src */
+        byte *_dst = (byte *)dst;
+        byte *_src = (byte *)src;
 
-	byte *_src_end	 = _src + size;
+        byte *_src_end = _src + size;
 
-	if (_dst >= _src && _dst <= _src_end) {
-		byte *o_begin	= _dst;
-		byte *o_end	= _src_end;
-		byte *o_dst	= _dst + (_dst - _src);
+        if (_dst >= _src && _dst <= _src_end) {
+                byte *o_begin = _dst;
+                byte *o_end   = _src_end;
+                byte *o_dst   = _dst + (_dst - _src);
 
-		__do_memcpy(o_dst, o_begin, o_end - o_begin);
+                __do_memcpy(o_dst, o_begin, o_end - o_begin);
 
-		_src_end = _dst;
-	}
+                _src_end = _dst;
+        }
 
-	__do_memcpy(_dst, _src, _src_end - _src);
+        __do_memcpy(_dst, _src, _src_end - _src);
 }
 
 /*
@@ -141,13 +127,9 @@ kmemmov(void *dst, const void *src, size_t size)
 void
 kmemset(void *dst, byte c, size_t size)
 {
-	/* TODO?: Better implementation for older CPU */
-	asm volatile ("rep stosb"
-		      : "=D" (dst),
-			"=a" (c),
-			"=c" (size)
-		      : "0" (dst),
-			"1" (c),
-			"2" (size)
-		      : "memory");
+        /* TODO?: Better implementation for older CPU */
+        asm volatile("rep stosb"
+                     : "=D"(dst), "=a"(c), "=c"(size)
+                     : "0"(dst), "1"(c), "2"(size)
+                     : "memory");
 }

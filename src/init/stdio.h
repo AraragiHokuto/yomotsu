@@ -3,4 +3,4 @@
 
 #include "calls.h"
 
-#endif	/* ORIHIME_INIT_STDIO_H__ */
+#endif /* ORIHIME_INIT_STDIO_H__ */
