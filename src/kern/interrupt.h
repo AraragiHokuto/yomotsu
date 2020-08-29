@@ -37,35 +37,35 @@ typedef boolean irqflag_t;
 void            interrupt_save_flag(irqflag_t *flag);
 void            interrupt_load_flag(irqflag_t flag);
 
-        #define INTERRUPT_CRITICAL_BEGIN                 \
-                do {                                     \
-                        irqflag_t __irqflag;             \
-                        interrupt_save_flag(&__irqflag); \
-                        interrupt_disable_preemption();  \
-                        do
+#define INTERRUPT_CRITICAL_BEGIN                 \
+        do {                                     \
+                irqflag_t __irqflag;             \
+                interrupt_save_flag(&__irqflag); \
+                interrupt_disable_preemption();  \
+                do
 
-        #define INTERRUPT_CRITICAL_END          \
-                while (0)                       \
-                        ;                       \
-                interrupt_load_flag(__irqflag); \
-                }                               \
-                while (0)
+#define INTERRUPT_CRITICAL_END          \
+        while (0)                       \
+                ;                       \
+        interrupt_load_flag(__irqflag); \
+        }                               \
+        while (0)
 
 typedef struct interrupt_percpu_data_s interrupt_percpu_data_t;
 
-        /* === APIC related === */
+/* === APIC related === */
 
-        #define APIC_REG_ID             0x20
-        #define APIC_REG_TASK_PRIORITY  0x80
-        #define APIC_REG_EOI            0xB0
-        #define APIC_REG_DEST_FORMAT    0xE0
-        #define APIC_REG_SPURIOUS       0xF0
-        #define APIC_REG_ICR0           0x300
-        #define APIC_REG_ICR1           0x310
-        #define APIC_REG_TIMER_LVT      0x320
-        #define APIC_REG_TIMER_INIT_CNT 0x380
-        #define APIC_REG_TIMER_CURR_CNT 0x390
-        #define APIC_REG_TIMER_DIV_CFG  0X3E0
+#define APIC_REG_ID             0x20
+#define APIC_REG_TASK_PRIORITY  0x80
+#define APIC_REG_EOI            0xB0
+#define APIC_REG_DEST_FORMAT    0xE0
+#define APIC_REG_SPURIOUS       0xF0
+#define APIC_REG_ICR0           0x300
+#define APIC_REG_ICR1           0x310
+#define APIC_REG_TIMER_LVT      0x320
+#define APIC_REG_TIMER_INIT_CNT 0x380
+#define APIC_REG_TIMER_CURR_CNT 0x390
+#define APIC_REG_TIMER_DIV_CFG  0X3E0
 
 u32  apic_read_reg(uintptr offset);
 void apic_write_reg(uintptr offset, u32 value);

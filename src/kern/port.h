@@ -1,38 +1,17 @@
 #ifndef IZANAMI_PORT_H__
 #define IZANAMI_PORT_H__
 
+#include <kern/boolean.h>
+#include <kern/process.h>
+
+#ifdef _KERNEL
+
+typedef u64 __u64;
+
 #include <kern/atomic.h>
 #include <kern/kobject.h>
 #include <kern/list.h>
 #include <kern/mutex.h>
-#include <kern/process.h>
-#include <kern/types.h>
-
-#define PORT_NAME_MAX_LEN 128
-
-#define PORT_REQ_OPEN_ACCEPT B_TRUE
-#define PORT_REQ_OPEN_REJECT B_FALSE
-
-enum PORT_MSG_TYPES {
-        PORT_REQ_TYPE_OPEN         = 1,
-        PORT_REQ_TYPE_CLOSE        = 2,
-        PORT_REQ_TYPE_CUSTOM_START = 0xff,
-};
-
-struct __port_request_s {
-        uint type;
-
-        pid_t sender_pid;
-
-        void * data_addr;
-        size_t data_size;
-
-        u64    retval_small;
-        void * retval_addr;
-        size_t retval_size;
-};
-
-#ifdef _KERNEL
 
 typedef struct __port_request_s port_request_user_t;
 
@@ -95,8 +74,38 @@ void            port_response(
 
 #else /* _KERNEL */
 
+#define __need_size_t
+#include <stddef.h>
+#include <stdint.h>
+
+typedef uint64_t __u64;
+
 typedef struct __port_request_s port_request_t;
 
 #endif /* _KERNEL */
+
+#define PORT_NAME_MAX_LEN 128
+
+#define PORT_REQ_OPEN_ACCEPT _B_TRUE
+#define PORT_REQ_OPEN_REJECT _B_FALSE
+
+enum PORT_MSG_TYPES {
+        PORT_REQ_TYPE_OPEN         = 1,
+        PORT_REQ_TYPE_CLOSE        = 2,
+        PORT_REQ_TYPE_CUSTOM_START = 0xff,
+};
+
+struct __port_request_s {
+        __uint type;
+
+        pid_t sender_pid;
+
+        void * data_addr;
+        size_t data_size;
+
+        __u64  retval_small;
+        void * retval_addr;
+        size_t retval_size;
+};
 
 #endif /* IZANAMI_PORT_H__ */

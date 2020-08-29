@@ -1,12 +1,12 @@
 #ifndef IZANAMI_KOBJECT_H__
 #define IZANAMI_KOBJECT_H__
 
+#ifdef _KERNEL
+
 #include <kern/atomic.h>
 #include <kern/mutex.h>
 #include <kern/process.h>
 #include <kern/types.h>
-
-#ifdef _KERNEL
 
 typedef size_t kobject_handler_t;
 
@@ -32,9 +32,11 @@ kobject_t *kobject_lock_fetch(process_t *proc, kobject_handler_t handler);
 void       kobject_free_release(kobject_t *object);
 void       kobject_cleanup(process_t *proc);
 
-#else
+#else /* _KERNEL */
 
-typedef unsigned long kobject_handler_t;
+#define __need_size_t
+#include <stddef.h>
+typedef size_t kobject_handler_t;
 
 #endif /* _KERNEL */
 

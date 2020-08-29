@@ -63,8 +63,8 @@ typedef struct acpi_madt_record_ioapic_s {
         u32                       interrupt_base;
 } PACKED acpi_madt_record_ioapic_t;
 
-        #define ACPI_MADT_FLAG_ACTIVE_LOW      2
-        #define ACPI_MADT_FLAG_LEVEL_TRIGGERED 8
+#define ACPI_MADT_FLAG_ACTIVE_LOW      2
+#define ACPI_MADT_FLAG_LEVEL_TRIGGERED 8
 
 typedef struct acpi_madt_record_int_src_override_s {
         acpi_madt_record_header_t header;

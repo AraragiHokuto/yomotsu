@@ -44,20 +44,19 @@ list_is_empty(list_node_t *head)
         return head->next == head;
 }
 
-        #define OFFSET_OF(__type, __member) __builtin_offsetof(__type, __member)
+#define OFFSET_OF(__type, __member) __builtin_offsetof(__type, __member)
 
-        #define CONTAINER_OF(__ptr, __type, __member) \
-                ((__type *)((byte *)(__ptr)-OFFSET_OF(__type, __member)))
+#define CONTAINER_OF(__ptr, __type, __member) \
+        ((__type *)((byte *)(__ptr)-OFFSET_OF(__type, __member)))
 
-        #define LIST_FOREACH(__head, __ptr)                              \
-                for (list_node_t *__ptr = __head.next; __ptr != &__head; \
-                     __ptr              = __ptr->next)
+#define LIST_FOREACH(__head, __ptr)                              \
+        for (list_node_t *__ptr = __head.next; __ptr != &__head; \
+             __ptr              = __ptr->next)
 
-        #define LIST_FOREACH_MUT(__head, __ptr, __nextptr)   \
-                for (list_node_t *__ptr     = (__head).next, \
-                                 *__nextptr = __ptr->next;   \
-                     __ptr != &(__head);                     \
-                     __ptr = __nextptr, __nextptr = __nextptr->next)
+#define LIST_FOREACH_MUT(__head, __ptr, __nextptr)                         \
+        for (list_node_t *__ptr = (__head).next, *__nextptr = __ptr->next; \
+             __ptr != &(__head);                                           \
+             __ptr = __nextptr, __nextptr = __nextptr->next)
 
 #endif /* _KERNEL */
 

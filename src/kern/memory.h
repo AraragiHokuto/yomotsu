@@ -1,12 +1,12 @@
 #ifndef IZANAMI_MEMORY_H_
 #define IZANAMI_MEMORY_H_
 
+#ifdef _KERNEL
+
 #include <kern/mutex.h>
 #include <kern/types.h>
 
-#ifdef _KERNEL
-
-        #define KMEM_PAGE_SIZE (2048 * 1024) /* 2MB */
+#define KMEM_PAGE_SIZE (2048 * 1024) /* 2MB */
 
 struct address_space_s {
         atomic_uint ref_count;
@@ -28,15 +28,15 @@ enum PMA_ZONES {
         PMA_ZONE_ANY,
 };
 
-        #define USER_ALLOWED_FLAGS (VM_PAGE_WRITABLE | VM_PAGE_EXECUTABLE)
+#define USER_ALLOWED_FLAGS (VM_PAGE_WRITABLE | VM_PAGE_EXECUTABLE)
 
-        #define KERNEL_VADDR_BEGIN   ((void *)0xffffffff80000000)
-        #define KERNEL_VADDR_END     ((void *)0xffffffffffffffff)
-        #define USERLAND_VADDR_BEGIN ((void *)0x2000000)
-        #define USERLAND_VADDR_END   ((void *)0x7fffffffffff)
+#define KERNEL_VADDR_BEGIN   ((void *)0xffffffff80000000)
+#define KERNEL_VADDR_END     ((void *)0xffffffffffffffff)
+#define USERLAND_VADDR_BEGIN ((void *)0x2000000)
+#define USERLAND_VADDR_END   ((void *)0x7fffffffffff)
 
-        #define VM_ALIGN_PAGE_2M(vaddr)  ((vaddr) & ~0x1fffff)
-        #define VM_OFFSET_PAGE_2M(vaddr) ((vaddr)&0x1fffff)
+#define VM_ALIGN_PAGE_2M(vaddr)  ((vaddr) & ~0x1fffff)
+#define VM_OFFSET_PAGE_2M(vaddr) ((vaddr)&0x1fffff)
 
 void    pma_init(void);
 uintptr pma_alloc_contiguous(enum PMA_ZONES zone, size_t size);
@@ -74,7 +74,7 @@ void *kmem_realloc(void *ptr, size_t new_size);
 
 #else /* _KERNEL */
 
-        #define PAGE_SIZE (4096 * 512);
+#define PAGE_SIZE (4096 * 512);
 
 enum MMAP_ATTR { MMAP_WRITABLE = 2, MMAP_EXECUTABLE = 8 };
 

@@ -1,7 +1,7 @@
+#include "calls.h"
 #include <kern/error.h>
 #include <kern/kobject.h>
 #include <kern/port.h>
-#include <stdio.h>
 
 void
 server(void)
@@ -62,7 +62,7 @@ main(void)
         print("init start\n");
         _entry_func          = server;
         kobject_handler_t as = as_clone(0);
-        pid_t server_pid = process_spawn(as, (uintptr)__process_spawn_entry);
+        pid_t server_pid = process_spawn(as, (uintptr_t)__process_spawn_entry);
 
         long port;
         while ((port = port_open("test", 4)) < 0) {
