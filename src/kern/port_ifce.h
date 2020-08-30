@@ -1,6 +1,6 @@
 /* port_ifce.h -- port-like interface for various kernel functions */
-#ifndef IZANAMI_PORT_IFCE_H__
-#define IZANAMI_PORT_IFCE_H__
+#ifndef KAGUYA_PORT_IFCE_H__
+#define KAGUYA_PORT_IFCE_H__
 
 #include <kern/boolean.h>
 #include <kern/process.h>
@@ -9,7 +9,7 @@
 
 typedef sint (*port_ifce_open_func_t)(void);
 typedef u64 (*port_ifce_req_func_t)(
-    void *data, size_t datalen, void *reply, size_t replylen);
+    u64 val_small, void *data, size_t datalen, void *reply, size_t replylen);
 typedef void (*port_ifce_close_func_t)(void);
 
 struct port_ifce_s {
@@ -27,4 +27,4 @@ port_ifce_t *port_ifce_lookup(const char *name);
 
 #endif /* _KERNEL */
 
-#endif /* IZANAMI_PORT_IFCE_H__ */
+#endif /* KAGUYA_PORT_IFCE_H__ */

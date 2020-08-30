@@ -1,5 +1,5 @@
-#ifndef IZANAMI_LIST_H__
-#define IZANAMI_LIST_H__
+#ifndef KAGUYA_LIST_H__
+#define KAGUYA_LIST_H__
 
 #include <kern/boolean.h>
 #include <kern/types.h>
@@ -60,4 +60,4 @@ list_is_empty(list_node_t *head)
 
 #endif /* _KERNEL */
 
-#endif /* IZANAMI_LIST_H__ */
+#endif /* KAGUYA_LIST_H__ */

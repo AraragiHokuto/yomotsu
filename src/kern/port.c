@@ -355,7 +355,7 @@ port_open(const char *name, size_t namelen, int *error)
                 return NULL;
         }
 
-        if (ref->req.retval_small != PORT_REQ_OPEN_ACCEPT) {
+        if (ref->req.val_small != PORT_REQ_OPEN_ACCEPT) {
                 *error = KERN_ERROR_PORT_REJECTED;
                 uint rc =
                     atomic_dec_fetch_uint(port->ref_count, __ATOMIC_ACQ_REL);

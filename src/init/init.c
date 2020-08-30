@@ -75,33 +75,33 @@ main(void)
         req.type = PORT_REQ_TYPE_CUSTOM_START + 1;
 
         req.data_size    = 4;
-        req.retval_small = 0xdeadbaba;
+        req.val_small = 0xdeadbaba;
 
         req.data_addr = "abcd";
         print("request\n");
         port_request(port, &req);
         print("request complete\n");
-        if (req.retval_small != 0xdeadbeef) {
+        if (req.val_small != 0xdeadbeef) {
                 print("invalid retval\n");
                 return -1;
         }
-        req.retval_small = 0xdeadbaba;
+        req.val_small = 0xdeadbaba;
 
         req.data_addr = "efgh";
         print("request\n");
         port_request(port, &req);
         print("request complete\n");
-        if (req.retval_small != 0xdeadbeef) {
+        if (req.val_small != 0xdeadbeef) {
                 print("invalid retval\n");
                 return -1;
         }
-        req.retval_small = 0xdeadbaba;
+        req.val_small = 0xdeadbaba;
 
         req.data_addr = "hijk";
         print("request\n");
         port_request(port, &req);
         print("request complete\n");
-        if (req.retval_small != 0xdeadbeef) {
+        if (req.val_small != 0xdeadbeef) {
                 print("invalid retval\n");
                 return -1;
         }

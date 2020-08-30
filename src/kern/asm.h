@@ -1,5 +1,5 @@
-#ifndef ORIHIME_ASM_H__
-#define ORIHIME_ASM_H__
+#ifndef KAGUYA_ASM_H__
+#define KAGUYA_ASM_H__
 
 #include <kern/types.h>
 
@@ -44,4 +44,4 @@ cpuid(u32 page, u32 *a, u32 *b, u32 *c, u32 *d)
 
 #endif /* _KERNEL */
 
-#endif /* ORIHIME_ASM_H__ */
+#endif /* KAGUYA_ASM_H__ */

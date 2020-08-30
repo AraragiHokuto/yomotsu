@@ -1,3 +1,4 @@
+#include <kern/asm.h>
 #include <kern/atomic.h>
 #include <kern/console.h>
 #include <kern/error.h>
@@ -8,6 +9,7 @@
 
 /* interface declarations */
 void port_ifce_debug_print_init(void);
+void port_ifce_setfs_init(void);
 
 #define PORT_IFCE_HASH_SIZE 512
 static atomic_ptr port_ifce_hash[PORT_IFCE_HASH_SIZE];
@@ -59,6 +61,7 @@ port_ifce_init(void)
         kmemset(port_ifce_hash, 0, sizeof(port_ifce_hash));
 
         port_ifce_debug_print_init();
+        port_ifce_setfs_init();
 }
 
 void
@@ -73,7 +76,7 @@ port_ifce_lookup(const char *name)
         return _port_ifce_hash_locate(name);
 }
 
-/*** debug print interface ***/
+/** debug print interface **/
 
 sint
 port_ifce_debug_print_open(void)
@@ -84,14 +87,15 @@ port_ifce_debug_print_open(void)
 
 u64
 port_ifce_debug_print_request(
-    void *data, size_t datalen, void *reply, size_t replylen)
+    u64 val_small, void *data, size_t data_size, void *reply, size_t reply_size)
 {
+        DONTCARE(val_small);
         DONTCARE(reply);
-        DONTCARE(replylen);
+        DONTCARE(reply_size);
 
-        kprintf("%sn", data, datalen);
+        kprintf("%sn", data, data_size);
 
-        return 0;
+        return KERN_OK;
 }
 
 void
@@ -110,6 +114,47 @@ port_ifce_debug_print_init(void)
         ifce->open_func  = port_ifce_debug_print_open;
         ifce->req_func   = port_ifce_debug_print_request;
         ifce->close_func = port_ifce_debug_print_close;
+
+        port_ifce_create(ifce);
+}
+
+/** FSBase setting interface **/
+
+sint
+port_ifce_setfs_open(void)
+{
+        return KERN_OK;
+}
+
+u64
+port_ifce_setfs_request(
+    u64 val_small, void *data, size_t data_size, void *reply, size_t reply_size)
+{
+        DONTCARE(data);
+        DONTCARE(data_size);
+        DONTCARE(reply);
+        DONTCARE(reply_size);
+        /* write FSBase */
+        wrmsr(0xc0000100, val_small);
+        return KERN_OK;
+}
+
+void
+port_ifce_setfs_close(void)
+{
+        return;
+}
+
+void
+port_ifce_setfs_init(void)
+{
+        port_ifce_t *ifce = kmem_alloc(sizeof(port_ifce_t));
+        VERIFY(ifce, "failed to allocate debug interface");
+
+        ifce->name       = "kern.setfsbase";
+        ifce->open_func  = port_ifce_setfs_open;
+        ifce->req_func   = port_ifce_setfs_request;
+        ifce->close_func = port_ifce_setfs_close;
 
         port_ifce_create(ifce);
 }

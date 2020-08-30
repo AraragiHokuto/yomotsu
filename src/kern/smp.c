@@ -24,7 +24,6 @@ percpu_init_ap(void)
         __ap_percpu_data->cpuid = __next_cpuid++;
 
         wrmsr(0xc0000101, (u64)__ap_percpu_data);
-        wrmsr(0xc0000102, (u64)__ap_percpu_data);
 }
 
 percpu_data_t *

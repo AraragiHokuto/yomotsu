@@ -22,10 +22,11 @@ struct port_request_s {
         uint               type;
         port_client_ref_t *sender;
 
+        u64 val_small;
+
         void * data_sender_vaddr;
         size_t data_size;
 
-        u64    retval_small;
         void * retval_sender_vaddr;
         size_t retval_size;
 
@@ -74,11 +75,8 @@ void            port_response(
 
 #else /* _KERNEL */
 
-#define __need_size_t
 #include <stddef.h>
 #include <stdint.h>
-
-typedef uint64_t __u64;
 
 typedef struct __port_request_s port_request_t;
 
@@ -100,10 +98,11 @@ struct __port_request_s {
 
         pid_t sender_pid;
 
+        __u64 val_small;
+
         void * data_addr;
         size_t data_size;
 
-        __u64  retval_small;
         void * retval_addr;
         size_t retval_size;
 };
