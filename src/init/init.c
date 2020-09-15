@@ -1,123 +1,46 @@
-#include "calls.h"
-#include <kern/error.h>
-#include <kern/kobject.h>
-#include <kern/port.h>
+#include <libos/process.h>
+#include <string.h>
+#include <stdint.h>
+#include <stdio.h>
 
-void
-server(void)
+char *argv[] = {
+	"hell",
+	"o wo",
+	"rld eh he he aaaaaaaaaaaa",
+	"aaaaaaaa ",
+	"aaaaaaaaaaaaaaaaaaaaa"
+};
+
+extern uint8_t _binary_stub_proc_bin_start[];
+
+int
+__init_main(void)
 {
-        char buf[256];
+        printf("init start\n");
 
-        long port = port_create("test", 4);
+        pid_t pid = process_spawn_from_memory(_binary_stub_proc_bin_start,
+				  sizeof(argv)/sizeof(char*), argv);
 
-        if (port < 0) {
-                print("port_create() error\n");
-                return;
-        } else {
-                print("port created\n");
-        }
+	if (pid < 0) {
+		perror("process_spawn_from_memory()");
+	} else {
+		printf("process spawned: pid = %ld\n", pid);
+	}
 
-        while (1) {
-                port_request_t req;
-                print("dequeueing\n");
-                long req_handler = port_receive(port, &req, buf, 255);
-                print("dequeue\n");
+	int64_t retval;
+	if (!process_wait(pid, &retval)) {
+		perror("process_wait()");
+	} else if ((int)retval != 0xdeadbeef) {
+		printf("expecting 0xdeadbeef; got 0x%x\n", (int)retval);
+	}
 
-                if (req.type == PORT_REQ_TYPE_OPEN) {
-                        print("open request received\n");
-                        port_response(
-                            req_handler, PORT_REQ_OPEN_ACCEPT, (void *)0, 0);
-                        print("open approved\n");
-                        continue;
-                }
-
-                if (req.type == PORT_REQ_TYPE_CLOSE) {
-                        print("close request received\n");
-                        port_response(req_handler, 0, (void *)0, 0);
-                        print("close responsed\n");
-                        process_exit(0xc0ffee);
-                        print("should be impossible to reach here\n");
-                        asm volatile("xchgw %bx, %bx");
-                }
-
-                buf[req.data_size] = '\0';
-                print(buf);
-                print("\n");
-
-                if (port_response(req_handler, 0xdeadbeef, (void *)0, 0)
-                    != KERN_OK) {
-                        print("port_response() error\n");
-                        break;
-                }
-        }
+        printf("exiting init to trigger a panic\n");
+	process_exit(0);
 }
-
-extern void  __process_spawn_entry(void);
-extern void *_entry_func;
-extern void *_entry_arg;
 
 int
 main(void)
 {
-        print("init start\n");
-        _entry_func          = server;
-        kobject_handler_t as = as_clone(0);
-        pid_t server_pid = process_spawn(as, (uintptr_t)__process_spawn_entry);
-
-        long port;
-        while ((port = port_open("test", 4)) < 0) {
-                print("port_open() failed; retry\n");
-        }
-
-        print("port open\n");
-
-        port_request_t req;
-        req.type = PORT_REQ_TYPE_CUSTOM_START + 1;
-
-        req.data_size    = 4;
-        req.val_small = 0xdeadbaba;
-
-        req.data_addr = "abcd";
-        print("request\n");
-        port_request(port, &req);
-        print("request complete\n");
-        if (req.val_small != 0xdeadbeef) {
-                print("invalid retval\n");
-                return -1;
-        }
-        req.val_small = 0xdeadbaba;
-
-        req.data_addr = "efgh";
-        print("request\n");
-        port_request(port, &req);
-        print("request complete\n");
-        if (req.val_small != 0xdeadbeef) {
-                print("invalid retval\n");
-                return -1;
-        }
-        req.val_small = 0xdeadbaba;
-
-        req.data_addr = "hijk";
-        print("request\n");
-        port_request(port, &req);
-        print("request complete\n");
-        if (req.val_small != 0xdeadbeef) {
-                print("invalid retval\n");
-                return -1;
-        }
-
-        print("closing port\n");
-        port_close(port);
-        print("port closed\n");
-
-        process_state_t state;
-        process_wait(-1, &state);
-
-        print("wait returned\n");
-        if (state.retval != 0xc0ffee) {
-                print("not exactly what I was expecting for\n");
-        }
-
-        print("exiting init to trigger a panic\n");
-        return 0;
+	/* this should not be called */
+	printf("main in stub_init called\n");
 }

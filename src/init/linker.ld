@@ -1,4 +1,4 @@
-ENTRY(_start);
+ENTRY(__init_start);
 
 SECTIONS
 {
@@ -6,18 +6,18 @@ SECTIONS
 	_vaddr_base	= .;
 
 
-	.text	BLOCK(4K) : ALIGN(4K)
+	.text	BLOCK(2M) : ALIGN(2M)
 	{
 		*(.text)
 	}
 
-	.data	BLOCK(4K) : ALIGN(4K)
+	.data	BLOCK(2M) : ALIGN(2M)
 	{
 		*(.rodata)
 		*(.data)
 	}
 
-	.bss	BLOCK(4K) : ALIGN(4K)
+	.bss	BLOCK(2M) : ALIGN(2M)
 	{
 		*(COMMON)
 		*(.bss)
