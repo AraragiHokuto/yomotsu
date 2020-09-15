@@ -1,0 +1,95 @@
+#!/bin/sh
+
+TARGET=${TARGET:-"debug"}
+
+error_out() {
+    echo "Error: " $1;
+    return 1;
+}
+
+AS="$(realpath $LLVM_PREFIX)/bin/clang"
+AR="$(realpath $LLVM_PREFIX)/bin/llvm-ar"
+CC="$(realpath $LLVM_PREFIX)/bin/clang"
+LD="$(realpath $LLVM_PREIFX)/bin/clang"
+CFLAGS="-Wall -Wextra -std=gnu99 --target=x86_64-pc-orihime-elf -I../../src -I../../src/libc -I../../src/libc/cstd -static -nostdlib -nostdlibinc -fno-pie -mno-implicit-float -Wno-unused-function -Wno-sign-compare -Wno-typedef-redefinition"
+ASFLAGS="--target=x86_64-pc-orihime-elf -c"
+LDFLAGS="-nostdlib -z max-page-size=0x1000 -fno-pie -static"
+
+if [[ "$TARGET" = "debug" ]]; then
+    CFLAGS="$CFLAGS -g"
+    LDFLAGS="$LDFLAGS -g"
+else
+    CFLAGS="$CFLAGS -O2"
+    LDFLAGS="$LDFLAGS -O2"
+fi
+
+echo "Configuration: "
+echo "	TARGET	$TARGET"
+echo "	AS	$AS"
+echo "	CC	$CC"
+echo "	ASFLAGS	$ASFLAGS"
+echo "	CFLAGS	$CFLAGS"
+echo "	LDFLAGS	$LDFLAGS"
+
+mkdir -p build/libc
+
+gen_libc_makefile() {
+    pushd build/libc
+    cat <<EOF > Makefile
+AS=$AS
+AR=$AR
+CC=$CC
+LD=$CC
+ASFLAGS=$ASFLAGS
+CFLAGS=$CFLAGS
+LDFLAGS=$LDFLAGS
+
+EOF
+    cd ../../src/libc/cstd
+    OBJS=$(printf "cstd_%s.o " *.c)
+    cd ../libos
+    OBJS="$OBJS $(printf "libos_%s.o " *.c *.s)"
+    cd ../../../build/libc
+
+    echo "Generating libc Makefile..."
+
+    cat <<EOF >> Makefile
+liborihime.a: $OBJS
+	@echo "AR liborihime.a"
+	\$(AR) rcs liborihime.a $OBJS
+EOF
+
+    for i in $(ls ../../src/libc/cstd/*.c); do
+	echo "Generating $i"
+	$CC -MM -MQcstd_$(basename $i).o $CFLAGS $i >> Makefile
+	echo "	@echo \"	CC	cstd_$(basename $i).o\"" >> Makefile
+	echo "	@\$(CC) \$(CFLAGS) -D__ORIHIME_CSTD_INTERNAL -c -ocstd_$(basename $i).o $i" >> Makefile
+	echo >> Makefile
+    done
+
+    # for i in $(ls ../../src/libc/cstd/*.s); do
+    # 	echo "Generating $i"
+    # 	echo "libos_$(basename $i).o: $i" >> Makefile
+    # 	echo "	@echo \"	AS	cstd_$(basename $i).o\"" >> Makefile
+    # 	echo "	@\$(AS) \$(ASFLAGS) -o cstd_$(basename $i).o $i" >> Makefile
+    # done
+
+    for i in $(ls ../../src/libc/libos/*.c); do
+	echo "Generating $i"
+	$CC -MM -MQlibos_$(basename $i).o $CFLAGS $i >> Makefile
+	echo "	@echo \"	CC	libos_$(basename $i).o\"" >> Makefile
+	echo "	@\$(CC) \$(CFLAGS) -D__ORIHIME_LIBOS_INTERNAL -c -olibos_$(basename $i).o $i" >> Makefile
+	echo >> Makefile
+    done
+
+    for i in $(ls ../../src/libc/libos/*.s); do
+	echo "Generating $i"
+	echo "libos_$(basename $i).o: $i" >> Makefile
+	echo "	@echo \"	AS	libos_$(basename $i).o\"" >> Makefile
+	echo "	@\$(AS) \$(ASFLAGS) -o libos_$(basename $i).o $i" >> Makefile
+    done
+
+    popd
+}
+
+gen_libc_makefile

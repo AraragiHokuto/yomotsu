@@ -1,0 +1,3 @@
+liborihime.a: cstd_assert.c.o cstd__cstd_init.c.o cstd_dtoa.c.o cstd_signal.c.o cstd_stdlib.c.o cstd_string.c.o cstd_*.s.o  libos_console.c.o libos_elfloader.c.o libos__exit.c.o libos__init.c.o libos__libcinit.c.o libos_memory.c.o libos_process.c.o libos_syscall.c.o libos_crt1.s.o libos_crti.s.o libos_crtn.s.o libos_syscall.s.o 
+	@echo "AR liborihime.a"
+	$(AR) -rs liborihime.a cstd_assert.c.o cstd__cstd_init.c.o cstd_dtoa.c.o cstd_signal.c.o cstd_stdlib.c.o cstd_string.c.o cstd_*.s.o  libos_console.c.o libos_elfloader.c.o libos__exit.c.o libos__init.c.o libos__libcinit.c.o libos_memory.c.o libos_process.c.o libos_syscall.c.o libos_crt1.s.o libos_crti.s.o libos_crtn.s.o libos_syscall.s.o 
