@@ -42,5 +42,4 @@ typedef struct __libos_process_init_data_s __libos_process_init_data_t;
 		- sizeof(__libos_process_init_data_t)))
 
 #endif /* __ORIHIME_LIBOS_INTERAL */
-
 #endif /* __ORIHIME_LIBOS_PROCESS_H__ */
