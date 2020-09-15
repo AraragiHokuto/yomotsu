@@ -24,7 +24,7 @@ syscall_as_destroy(kobject_t address_space)
         return __do_syscall(SYSCALL_AS_DESTROY, address_space, 0, 0, 0, 0, 0);
 }
 
-kobject_t
+intptr_t
 syscall_mmap(
     kobject_t address_space, uintptr_t vaddr, size_t size, unsigned int flag)
 {
