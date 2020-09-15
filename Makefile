@@ -2,14 +2,21 @@ AS=x86_64-elf-as
 CC=clang
 LD=clang
 
-all: kernel
+all: kernel libc init
 
 kernel: build/kern/kernel.bin
+libc: build/libc/liborihime.a
+init: src/init/init
+
 build/kern/kernel.bin: FORCE
 	./src/kern/configure
 	make -C build/kern
 
-src/init/init: FORCE
+build/libc/liborihime.a: FORCE
+	./src/libc/configure
+	make -C build/libc
+
+src/init/init: build/libc/liborihime.a FORCE
 	make -C src/init
 
 iso: orihime.iso
