@@ -451,6 +451,7 @@ static void
 vm_empty_pd(pde_t *pd)
 {
         for (size_t i = 0; i < 512; ++i) {
+		if (!pd[i].present) continue;
                 pma_free(pd[i].addr << 12, KMEM_PAGE_SIZE);
                 pd[i].present = 0;
         }
@@ -460,6 +461,7 @@ static void
 vm_empty_pdp(pdpe_t *pdp)
 {
         for (size_t i = 0; i < 512; ++i) {
+		if (!pdp[i].present) continue;
                 pde_t *pd = vm_get_vma_for_pma(pdp[i].addr << 12);
                 vm_empty_pd(pd);
                 free_pt(pdp[i].addr << 12);
@@ -471,6 +473,7 @@ static void
 vm_empty_userland(pml4e_t *pml4)
 {
         for (size_t i = 0; i < 256; ++i) {
+		if (!pml4[i].present) continue;
                 pdpe_t *pdp = vm_get_vma_for_pma(pml4[i].addr << 12);
                 vm_empty_pdp(pdp);
                 pml4[i].present = 0;
@@ -921,9 +924,6 @@ kmem_alloc(size_t size)
 
         mutex_release(&kheap_lock);
         void *ret = (void *)(((byte *)p) + sizeof(kheap_chunk_t));
-        if ((uintptr)ret == 0xffffffff8207d5a0) {
-                kprintf("ret = 0x%x, p = 0x%x\n", ret, p);
-        }
         return ret;
 }
 

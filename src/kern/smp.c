@@ -65,6 +65,7 @@ smp_start_ap(u32 target_lapic_id)
         apic_write_reg(APIC_REG_ICR1, icr1_value);
 
         /* send IPI */
+	kprintf("\tSMP: send IPI to processor %d\n", target_lapic_id);
         apic_write_reg(APIC_REG_ICR0, 0x00004500);
 
         /* wait 10ms */
@@ -92,6 +93,7 @@ smp_start_ap(u32 target_lapic_id)
             (uintptr)&_ap_start - (uintptr)&_ap_trampoline);
 
         /* send SIPI */
+	kprintf("\tSMP: send SIPI to processor %d\n", target_lapic_id);
         apic_write_reg(APIC_REG_ICR0, 0x00004607);
 
         /* wait 1ms */

@@ -555,7 +555,7 @@ port_response(port_request_t *req, void *retval, size_t retval_size, int *error)
         }
 
         if (retval && retval_size > req->retval_size) {
-                *error = KERN_ERROR_INVIL;
+                *error = KERN_ERROR_INVAL;
                 return;
         }
 

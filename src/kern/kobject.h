@@ -34,9 +34,8 @@ void       kobject_cleanup(process_t *proc);
 
 #else /* _KERNEL */
 
-#define __need_size_t
-#include <stddef.h>
-typedef size_t kobject_handler_t;
+#include <stdint.h>
+typedef int64_t kobject_t;
 
 #endif /* _KERNEL */
 

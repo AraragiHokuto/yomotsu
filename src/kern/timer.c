@@ -225,8 +225,9 @@ timer_calibrate(void)
         asm volatile("sti");
 
         /* wait until pic fire */
-        while (pit_flag == B_TRUE)
-                ;
+        while (pit_flag == B_TRUE) {
+		asm volatile ("pause");
+	}
 
         /* mask apic timer */
         asm volatile("cli");
@@ -239,7 +240,7 @@ timer_calibrate(void)
         asm volatile("sti");
 
         /* read and return value */
-        u32 tsc_end = __do_rdtscp();
+        u64 tsc_end = __do_rdtscp();
         u32 val     = apic_read_reg(APIC_REG_TIMER_CURR_CNT);
 
         apic_timer_count = 0xffffffff - val;
@@ -267,8 +268,8 @@ timer_init_bsp(void)
 
         timer_calibrate();
 
-        init_apic_timer();
         interrupt_set_handler(48, timer_irq_handler);
+        init_apic_timer();
 }
 
 void
@@ -286,8 +287,9 @@ timer_spin_wait(timer_uduration_t wait_ms)
 
         u64 deadline = timer_get_timestamp() + wait_ms;
 
-        while (timer_get_timestamp() < deadline)
-                ;
+	while (timer_get_timestamp() < deadline) {
+		asm volatile ("pause");
+	}
 }
 
 void
@@ -300,5 +302,5 @@ timer_set_timeout(
 u64
 timer_get_timestamp(void)
 {
-        return __do_rdtscp() / tsc_count * 10;
+	return __do_rdtscp() / tsc_count * 10;
 }

@@ -32,8 +32,8 @@ enum PMA_ZONES {
 
 #define KERNEL_VADDR_BEGIN   ((void *)0xffffffff80000000)
 #define KERNEL_VADDR_END     ((void *)0xffffffffffffffff)
-#define USERLAND_VADDR_BEGIN ((void *)0x2000000)
-#define USERLAND_VADDR_END   ((void *)0x7fffffffffff)
+#define USERLAND_VADDR_BEGIN ((void *)0x200000)
+#define USERLAND_VADDR_END   ((void *)0x800000000000)
 
 #define VM_ALIGN_PAGE_2M(vaddr)  ((vaddr) & ~0x1fffff)
 #define VM_OFFSET_PAGE_2M(vaddr) ((vaddr)&0x1fffff)
@@ -74,9 +74,9 @@ void *kmem_realloc(void *ptr, size_t new_size);
 
 #else /* _KERNEL */
 
-#define PAGE_SIZE (4096 * 512);
+#define __PAGE_SIZE (4096 * 512)
 
-enum MMAP_ATTR { MMAP_WRITABLE = 2, MMAP_EXECUTABLE = 8 };
+enum MMAP_ATTR { __MMAP_WRITABLE = 2, __MMAP_EXECUTABLE = 8 };
 
 #endif /* _KERNEL */
 
