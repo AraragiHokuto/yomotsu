@@ -18,5 +18,5 @@ init.c.o: init.c
 	$(CC) $(CFLAGS) -c -oinit.c.o init.c
 
 clean: FORCE
-	rm -rf *.o init
+	rm -rf *.o init stub_proc_bin
 FORCE:
