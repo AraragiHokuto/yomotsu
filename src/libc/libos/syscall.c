@@ -84,13 +84,6 @@ syscall_port_response(
             ret_data_size, 0, 0);
 }
 
-tid_t
-syscall_thread_spawn(void *entry_point)
-{
-        return __do_syscall(
-            SYSCALL_THREAD_SPAWN, (uintptr_t)entry_point, 0, 0, 0, 0, 0);
-}
-
 pid_t
 syscall_process_spawn(kobject_t address_space, void *entry_point)
 {
@@ -100,28 +93,12 @@ syscall_process_spawn(kobject_t address_space, void *entry_point)
 }
 
 void __attribute__((noreturn))
-syscall_thread_exit(int64_t retval)
-{
-        __do_syscall(SYSCALL_THREAD_EXIT, retval, 0, 0, 0, 0, 0);
-        /* dear compiler: we really don't return */
-        while (1)
-                ;
-}
-
-void __attribute__((noreturn))
-syscall_process_exit(int64_t retval)
+syscall_process_exit(uint64_t retval)
 {
         __do_syscall(SYSCALL_PROCESS_EXIT, retval, 0, 0, 0, 0, 0);
         /* dear compiler: we really don't return */
         while (1)
                 ;
-}
-
-int64_t
-syscall_thread_wait(tid_t tid, thread_state_t *state)
-{
-        return __do_syscall(
-            SYSCALL_THREAD_WAIT, tid, (uintptr_t)state, 0, 0, 0, 0);
 }
 
 int64_t

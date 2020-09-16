@@ -5,11 +5,11 @@
 #ifdef __ORIHIME_LIBOS_INTERNAL
 
 #include <kern/futex.h>
+#include <kern/kobject.h>
 #include <kern/memory.h>
 #include <kern/port.h>
 #include <kern/process.h>
 #include <kern/syscall.h>
-#include <kern/kobject.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -31,11 +31,8 @@ kobject_t syscall_port_receive(
     size_t buffer_size);
 int64_t syscall_port_response(
     kobject_t request, int64_t retval, void *ret_data, size_t ret_data_size);
-tid_t   syscall_thread_spawn(void *entry_point);
 pid_t   syscall_process_spawn(kobject_t address_space, void *entry_point);
-void    syscall_thread_exit(int64_t retval) __attribute__((noreturn));
-void    syscall_process_exit(int64_t retval) __attribute__((noreturn));
-int64_t syscall_thread_wait(tid_t tid, thread_state_t *state);
+void    syscall_process_exit(uint64_t retval) __attribute__((noreturn));
 int64_t syscall_process_wait(pid_t pid, process_state_t *state);
 int64_t syscall_reincarnate(kobject_t address_space, void *entry)
     __attribute__((noreturn));
