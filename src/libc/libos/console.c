@@ -17,7 +17,6 @@ console_write(const char *str, size_t str_size)
         }
 
         port_request_t request = {
-            .type        = PORT_REQ_TYPE_CUSTOM_START + 1,
             .data_addr   = (void *)str,
             .data_size   = str_size,
             .retval_addr = NULL,

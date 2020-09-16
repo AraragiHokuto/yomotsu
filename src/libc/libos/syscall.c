@@ -76,6 +76,15 @@ syscall_port_request(kobject_t port, port_request_t *request)
 }
 
 int64_t
+syscall_port_receive(
+    kobject_t port, port_request_t *buffer, void *buf, size_t buflen)
+{
+        return __do_syscall(
+            SYSCALL_PORT_RECEIVE, port, (uintptr_t)buffer, (uintptr_t)buf,
+            buflen, 0, 0);
+}
+
+int64_t
 syscall_port_response(
     kobject_t request, int64_t retval, void *ret_data, size_t ret_data_size)
 {
@@ -92,8 +101,7 @@ syscall_process_spawn(kobject_t address_space, void *entry_point)
             0, 0);
 }
 
-void __attribute__((noreturn))
-syscall_process_exit(uint64_t retval)
+void __attribute__((noreturn)) syscall_process_exit(uint64_t retval)
 {
         __do_syscall(SYSCALL_PROCESS_EXIT, retval, 0, 0, 0, 0, 0);
         /* dear compiler: we really don't return */

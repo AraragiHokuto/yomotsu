@@ -4,6 +4,17 @@
 #include <kern/boolean.h>
 #include <kern/process.h>
 
+#define PORT_NAME_MAX_LEN 128
+
+#define PORT_REQ_OPEN_ACCEPT _B_TRUE
+#define PORT_REQ_OPEN_REJECT _B_FALSE
+
+enum PORT_MSG_TYPES {
+        PORT_REQ_TYPE_OPEN         = 1,
+        PORT_REQ_TYPE_CLOSE        = 2,
+        PORT_REQ_TYPE_CUSTOM_START = 0xff,
+};
+
 #ifdef _KERNEL
 
 typedef u64 __u64;
@@ -19,7 +30,6 @@ typedef struct port_server_ref_s port_server_ref_t;
 typedef struct port_client_ref_s port_client_ref_t;
 
 struct port_request_s {
-        uint               type;
         port_client_ref_t *sender;
 
         u64 val_small;
@@ -82,20 +92,7 @@ typedef struct __port_request_s port_request_t;
 
 #endif /* _KERNEL */
 
-#define PORT_NAME_MAX_LEN 128
-
-#define PORT_REQ_OPEN_ACCEPT _B_TRUE
-#define PORT_REQ_OPEN_REJECT _B_FALSE
-
-enum PORT_MSG_TYPES {
-        PORT_REQ_TYPE_OPEN         = 1,
-        PORT_REQ_TYPE_CLOSE        = 2,
-        PORT_REQ_TYPE_CUSTOM_START = 0xff,
-};
-
 struct __port_request_s {
-        __uint type;
-
         pid_t sender_pid;
 
         __u64 val_small;

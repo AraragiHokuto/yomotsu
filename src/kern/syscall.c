@@ -484,11 +484,6 @@ syscall_port_request(kobject_handler_t handler, port_request_user_t *_req)
                 PANIC("unimplemented process kill");
         }
 
-        if (user_req.type < PORT_REQ_TYPE_CUSTOM_START) {
-                mutex_release(&obj->lock);
-                return -KERN_ERROR_INVAL;
-        }
-
         if (obj->type == KOBJ_TYPE_PORT_IFCE) {
                 /* invoke port-like interface */
                 mutex_acquire(&CURRENT_ADDRESS_SPACE->lock);
@@ -525,7 +520,6 @@ syscall_port_request(kobject_handler_t handler, port_request_user_t *_req)
 
         kmemset(&ref->req, 0, sizeof(port_request_t));
 
-        ref->req.type                = user_req.type;
         ref->req.sender              = ref;
         ref->req.val_small           = user_req.val_small;
         ref->req.data_sender_vaddr   = user_req.data_addr;
@@ -588,8 +582,8 @@ syscall_port_receive(
         request_obj->ptr  = req;
 
         port_request_user_t user_req;
+        user_req.val_small   = req->val_small;
         user_req.sender_pid  = req->sender->holder->pid;
-        user_req.type        = req->type;
         user_req.data_size   = req->data_size;
         user_req.retval_size = req->retval_size;
 
@@ -760,7 +754,7 @@ syscall_reincarnate(kobject_handler_t as_h, u64 user_entry)
                 return -KERN_ERROR_INVAL;
         }
 
-	/* unlock and relock to prevent deadlock */
+        /* unlock and relock to prevent deadlock */
         mutex_release(&as->lock);
 
         address_space_t *old_as        = CURRENT_PROCESS->address_space;

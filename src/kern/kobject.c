@@ -76,6 +76,10 @@ kobject_alloc_lock(process_t *proc, kobject_handler_t *handler)
 kobject_t *
 kobject_lock_fetch(process_t *proc, kobject_handler_t handler)
 {
+	if (!handler) {
+		return NULL;
+	}
+
         if (proc->kobject_size < handler) { return NULL; }
 
         kobject_t *ret = &proc->kobjects[handler - 1];

@@ -307,63 +307,6 @@ port_open(const char *name, size_t namelen, int *error)
         }
         ref->port = port;
 
-        /* wait for server to accept open */
-        ref->req.type     = PORT_REQ_TYPE_OPEN;
-        ref->req.sender   = ref;
-        ref->req.error    = KERN_OK;
-        ref->req.finished = B_FALSE;
-
-        port_server_ref_t *serv = NULL;
-        while (!serv) {
-                if (!atomic_load_uint(
-                        port->server_ref_count, __ATOMIC_ACQUIRE)) {
-                        /* all server have closed port */
-                        *error  = KERN_ERROR_NOENT;
-                        uint rc = atomic_dec_fetch_uint(
-                            port->ref_count, __ATOMIC_ACQ_REL);
-                        if (!rc) { _port_free(port); }
-                        kmem_free(ref);
-                        return NULL;
-                }
-
-                if (!atomic_load_uint(
-                        port->waiting_server_count, __ATOMIC_ACQUIRE)) {
-                        /* block until there's server waiting */
-                        futex_kwait(&port->waiting_server_count, 0);
-                }
-
-                mutex_acquire(&port->lock);
-                serv = _port_dequeue_server(port);
-
-                if (!serv) mutex_release(&port->lock);
-        }
-
-        _port_send_request(serv, &ref->req);
-        mutex_release(&port->lock);
-
-        /* TODO: timeout */
-        if (LIKELY(!atomic_load_boolean(ref->req.finished, __ATOMIC_ACQUIRE))) {
-                futex_kwait(&ref->req.finished, B_FALSE);
-        }
-
-        if (ref->req.error != KERN_OK) {
-                *error = ref->req.error;
-                uint rc =
-                    atomic_dec_fetch_uint(port->ref_count, __ATOMIC_ACQ_REL);
-                if (!rc) { _port_free(port); }
-                kmem_free(ref);
-                return NULL;
-        }
-
-        if (ref->req.val_small != PORT_REQ_OPEN_ACCEPT) {
-                *error = KERN_ERROR_PORT_REJECTED;
-                uint rc =
-                    atomic_dec_fetch_uint(port->ref_count, __ATOMIC_ACQ_REL);
-                if (!rc) { _port_free(port); }
-                kmem_free(ref);
-                return NULL;
-        }
-
         kmemset(&ref->req, 0, sizeof(port_request_t));
         return ref;
 }
@@ -376,13 +319,7 @@ port_server_close(port_server_ref_t *ref)
                     atomic_xchg_ptr(ref->req, NULL, __ATOMIC_ACQ_REL);
                 req->error = KERN_ERROR_PORT_CLOSED;
                 atomic_store_boolean(req->finished, B_TRUE, __ATOMIC_SEQ_CST);
-
-                if (req->type == PORT_REQ_TYPE_CLOSE) {
-                        uint rc = atomic_dec_fetch_uint(
-                            req->sender->port->ref_count, __ATOMIC_ACQ_REL);
-                        ASSERT(rc);
-                        kmem_free(req->sender);
-                }
+		futex_kwake(&req->finished, 1);
                 ref->req = NULL;
         }
 
@@ -408,45 +345,7 @@ port_server_close(port_server_ref_t *ref)
 void
 port_client_close(port_client_ref_t *ref)
 {
-        /* send close notification */
-        ref->req.type     = PORT_REQ_TYPE_CLOSE;
-        ref->req.sender   = ref;
-        ref->req.error    = KERN_OK;
-        ref->req.finished = B_FALSE;
-
-        port_server_ref_t *serv = NULL;
-
-        while (!serv) {
-                if (!atomic_load_uint(
-                        ref->port->server_ref_count, __ATOMIC_ACQUIRE)) {
-                        /* all servers closed */
-                        uint rc = atomic_dec_fetch_uint(
-                            ref->port->ref_count, __ATOMIC_ACQ_REL);
-                        if (!rc) { _port_free(ref->port); }
-                        kmem_free(ref);
-                        break;
-                }
-
-                if (!atomic_load_uint(
-                        ref->port->waiting_server_count, __ATOMIC_ACQUIRE)) {
-                        /* blocking until there's server waiting */
-                        futex_kwait(&ref->port->waiting_server_count, 0);
-                }
-
-                mutex_acquire(&ref->port->lock);
-                serv = _port_dequeue_server(ref->port);
-
-                if (!serv) mutex_release(&ref->port->lock);
-        }
-
-        _port_send_request(serv, &ref->req);
-        mutex_release(&ref->port->lock);
-
-        /*
-         * no need to free ref here;
-         * server will free it when
-         * close request is processed
-         */
+	kmem_free(ref);
 }
 
 /* Assume request verified */
@@ -478,9 +377,7 @@ port_request(port_client_ref_t *ref, int *error)
         mutex_release(&ref->port->lock);
 
         if (LIKELY(!atomic_load_boolean(ref->req.finished, __ATOMIC_SEQ_CST))) {
-                kprintf("kwait\n");
                 futex_kwait(&ref->req.finished, B_FALSE);
-                kprintf("kwait\n");
         }
 
         if (ref->req.error != KERN_OK) { *error = ref->req.error; }
@@ -546,14 +443,6 @@ port_response(port_request_t *req, void *retval, size_t retval_size, int *error)
 {
         ASSERT(!atomic_load_boolean(req->finished, __ATOMIC_ACQUIRE));
 
-        if (req->type == PORT_REQ_TYPE_CLOSE) {
-                uint rc = atomic_dec_fetch_uint(
-                    req->sender->port->ref_count, __ATOMIC_ACQ_REL);
-                ASSERT(rc);
-                kmem_free(req->sender);
-                return;
-        }
-
         if (retval && retval_size > req->retval_size) {
                 *error = KERN_ERROR_INVAL;
                 return;
@@ -581,14 +470,5 @@ port_response(port_request_t *req, void *retval, size_t retval_size, int *error)
         }
 
         atomic_store_boolean(req->finished, B_TRUE, __ATOMIC_SEQ_CST);
-
-        if (req->type == PORT_REQ_TYPE_CLOSE) {
-                /* free client ref */
-                uint rc = atomic_dec_fetch_uint(
-                    req->sender->port->ref_count, __ATOMIC_ACQ_REL);
-                ASSERT(rc);
-                kmem_free(req->sender);
-        } else {
-                futex_kwake(&req->finished, 1);
-        }
+	futex_kwake(&req->finished, 1);
 }
