@@ -632,21 +632,7 @@ syscall_port_response(
         return -error;
 }
 
-void __thread_spawn_start(void *user_entry);
-
-s64
-syscall_thread_spawn(u64 user_entry)
-{
-        mutex_acquire(&CURRENT_PROCESS->lock);
-        thread_t *new = thread_create(CURRENT_PROCESS);
-        mutex_release(&CURRENT_PROCESS->lock);
-
-        new->state            = THREAD_STATE_READY;
-        new->sched_data.class = CURRENT_THREAD->sched_data.class;
-        thread_start(new, __thread_spawn_start, (void *)user_entry);
-        sched_enter(new);
-        return new->tid;
-}
+void __process_spawn_start(void *user_entry);
 
 s64
 syscall_process_spawn(kobject_handler_t as_handler, u64 user_entry)
@@ -662,210 +648,37 @@ syscall_process_spawn(kobject_handler_t as_handler, u64 user_entry)
                 return -KERN_ERROR_NOMEM;
         }
 
-        /*
-         * Here we clone thread first, then address space
-         * because it costs much less to rollback thread creation
-         */
-        thread_t *new_t = thread_create(new_proc);
-
-        mutex_release(&CURRENT_PROCESS->lock);
-        if (!new_t) {
-                process_destroy(new_proc);
-                return -KERN_ERROR_NOMEM;
-        }
-
-        mutex_acquire(&CURRENT_PROCESS->lock);
         address_space_t *as = as_lock_fetch(as_handler);
-        mutex_release(&CURRENT_PROCESS->lock);
 
         if (!as) {
-                thread_destroy(new_t);
                 process_destroy(new_proc);
                 return -KERN_ERROR_INVAL;
         }
+
+        mutex_release(&CURRENT_PROCESS->lock);
 
         new_proc->address_space = as;
         ++as->ref_count;
         mutex_release(&as->lock);
 
-        new_t->state            = THREAD_STATE_READY;
-        new_t->sched_data.class = SCHED_CLASS_NORMAL;
-        thread_start(new_t, __thread_spawn_start, (void *)user_entry);
-        sched_enter(new_t);
+        new_proc->state            = PROCESS_STATE_READY;
+        new_proc->sched_data.class = SCHED_CLASS_NORMAL;
+        process_start(new_proc, __process_spawn_start, (void *)user_entry);
+        sched_enter(new_proc);
         return new_proc->pid;
-}
-
-s64
-syscall_thread_exit(u64 retval)
-{
-        CURRENT_THREAD->retval = retval;
-        thread_terminate(CURRENT_THREAD);
-
-        return KERN_OK;
 }
 
 s64
 syscall_process_exit(u64 retval)
 {
         mutex_acquire(&CURRENT_PROCESS->lock);
-
         CURRENT_PROCESS->retval = retval;
-
-        /* TODO: reschedule signal */
-        LIST_FOREACH(CURRENT_PROCESS->thread_list, p)
-        {
-                thread_t *t = CONTAINER_OF(p, thread_t, proc_list_node);
-                if (t == CURRENT_THREAD) continue;
-                thread_terminate(t);
-        }
-
         mutex_release(&CURRENT_PROCESS->lock);
-        thread_terminate(CURRENT_THREAD);
 
+        process_terminate(CURRENT_PROCESS);
+
+        /* will never return to userland */
         return KERN_OK;
-}
-
-static thread_t *
-thread_wait_any(void)
-{
-        while (B_TRUE) {
-                if (atomic_load_uint(
-                        CURRENT_PROCESS->thread_count, __ATOMIC_ACQUIRE)
-                    == 1) {
-                        /* there's nobody but you */
-                        return NULL;
-                }
-
-                if (CURRENT_PROCESS->running_thread_count
-                    == CURRENT_PROCESS->thread_count) {
-                        sched_resched();
-                        continue;
-                }
-
-                mutex_acquire(&CURRENT_PROCESS->lock);
-                LIST_FOREACH_MUT(CURRENT_PROCESS->thread_list, p, __next)
-                {
-                        thread_t *t = CONTAINER_OF(p, thread_t, proc_list_node);
-                        if (t == CURRENT_THREAD) { continue; }
-
-                        if (atomic_load_uint(t->wait_count, __ATOMIC_ACQUIRE)
-                            != 0) {
-                                /* already being waited */
-                                continue;
-                        }
-
-                        if (t->state != THREAD_STATE_EXITED) { continue; }
-
-                        list_remove(&t->proc_list_node);
-                        mutex_release(&CURRENT_PROCESS->lock);
-                        return t;
-                }
-                mutex_release(&CURRENT_PROCESS->lock);
-                sched_resched();
-        }
-}
-
-s64
-syscall_thread_wait(tid_t tid, thread_state_t *_stat)
-{
-        thread_state_t stat;
-
-        if (tid == (tid_t)-1) {
-                thread_t *t    = thread_wait_any();
-                stat.retval    = t->retval;
-                stat.thread_id = t->tid;
-
-                /* wait for thread to stop */
-                while (t->running) {
-                        /* TODO: proper blocking */
-                        sched_resched();
-                }
-
-                thread_destroy(t);
-        } else {
-                thread_t *target = NULL;
-                mutex_acquire(&CURRENT_PROCESS->lock);
-                LIST_FOREACH(CURRENT_PROCESS->thread_list, p)
-                {
-                        thread_t *t =
-                            CONTAINER_OF(p, thread_t, sched_list_node);
-                        if (t->tid != tid) { continue; }
-
-                        atomic_inc_fetch_uint(t->wait_count, __ATOMIC_RELAXED);
-                        target = t;
-                        break;
-                }
-                mutex_release(&CURRENT_PROCESS->lock);
-
-                if (!target) {
-                        /* not found */
-                        return -KERN_ERROR_INVAL;
-                }
-
-                /* wait for thread to stop */
-                while (target->running) {
-                        /* TODO: proper blocking */
-                        sched_resched();
-                }
-
-                stat.retval    = target->retval;
-                stat.thread_id = target->tid;
-                ASSERT(target->tid == tid);
-
-                if (!atomic_dec_fetch_uint(
-                        target->wait_count, __ATOMIC_ACQ_REL)) {
-                        thread_destroy(target);
-                }
-        }
-
-        if (!user_memory_write(
-                CURRENT_ADDRESS_SPACE, _stat, &stat, sizeof(stat))) {
-                mutex_acquire(&CURRENT_PROCESS->lock);
-                process_terminate(CURRENT_PROCESS);
-                mutex_release(&CURRENT_PROCESS->lock);
-        }
-
-        return KERN_OK;
-}
-
-static process_t *
-process_wait_any(void)
-{
-        while (B_TRUE) {
-                mutex_acquire(&CURRENT_PROCESS->lock);
-
-                if (list_is_empty(&CURRENT_PROCESS->child_list_head)) {
-                        /* don't have a child */
-                        mutex_release(&CURRENT_PROCESS->lock);
-                        return NULL;
-                }
-
-                /* TODO proper blocking */
-                LIST_FOREACH(CURRENT_PROCESS->child_list_head, p)
-                {
-                        process_t *proc =
-                            CONTAINER_OF(p, process_t, sibling_list_node);
-
-                        if (atomic_load_uint(
-                                proc->wait_count, __ATOMIC_ACQUIRE)) {
-                                /* already begin waited, skip this one */
-                                continue;
-                        }
-
-                        if (atomic_load_uint(
-                                proc->running_thread_count, __ATOMIC_ACQUIRE)) {
-                                /* still running */
-                                continue;
-                        }
-
-                        list_remove(&proc->sibling_list_node);
-                        mutex_release(&CURRENT_PROCESS->lock);
-                        return proc;
-                }
-
-                mutex_release(&CURRENT_PROCESS->lock);
-                sched_resched();
-        }
 }
 
 s64
@@ -873,12 +686,31 @@ syscall_process_wait(pid_t pid, process_state_t *_stat)
 {
         process_state_t stat;
 
-        process_t *proc;
+        process_t *proc = NULL;
         if (pid == (pid_t)-1) {
-                proc = process_wait_any();
+                while (!proc) {
+                        futex_val_t exited_child =
+                            CURRENT_PROCESS->exited_child_count;
+
+                        mutex_acquire(&CURRENT_PROCESS->lock);
+                        LIST_FOREACH(CURRENT_PROCESS->child_list_head, p)
+                        {
+                                process_t *pp = CONTAINER_OF(
+                                    p, process_t, sibling_list_node);
+                                if (!atomic_load_boolean(
+                                        pp->terminate_flag, __ATOMIC_ACQUIRE)) {
+                                        continue;
+                                }
+                                proc = pp;
+                        }
+                        mutex_release(&CURRENT_PROCESS->lock);
+
+                        /* wait until there's child exit */
+                        futex_kwait(
+                            &CURRENT_PROCESS->exited_child_count, exited_child);
+                }
         } else {
                 mutex_acquire(&CURRENT_PROCESS->lock);
-                proc = NULL;
                 LIST_FOREACH(CURRENT_PROCESS->child_list_head, p)
                 {
                         process_t *pp =
@@ -888,21 +720,17 @@ syscall_process_wait(pid_t pid, process_state_t *_stat)
 
                         proc = pp;
                 }
-		mutex_release(&CURRENT_PROCESS->lock);
+                mutex_release(&CURRENT_PROCESS->lock);
 
                 if (!proc) { return -KERN_ERROR_INVAL; }
         }
 
-        /* wait for every thread to exit */
-        LIST_FOREACH_MUT(proc->thread_list, p, __next)
-        {
-                thread_t *t = CONTAINER_OF(p, thread_t, proc_list_node);
-                while (t->running) { sched_resched(); }
-
-                thread_destroy(t);
+        /* wait for process to exit */
+        while (B_TRUE) {
+                u64 state = proc->state;
+                if (state == PROCESS_STATE_EXITED) break;
+                futex_kwait(&proc->state, state);
         }
-
-        ASSERT(proc->thread_count == 0);
 
         stat.process_id = proc->pid;
         stat.retval     = proc->retval;
@@ -924,14 +752,6 @@ void NORETURN __reincarnate_return(u64 user_entry);
 s64
 syscall_reincarnate(kobject_handler_t as_h, u64 user_entry)
 {
-        boolean flag = atomic_xchg_boolean(
-            CURRENT_PROCESS->reincarnation_flag, B_TRUE, __ATOMIC_ACQ_REL);
-        if (flag) {
-                /* there's already an ongoing reincarnation */
-                thread_terminate(CURRENT_THREAD);
-                sched_resched();
-        }
-
         mutex_acquire(&CURRENT_PROCESS->lock);
 
         address_space_t *as = as_lock_fetch(as_h);
@@ -939,22 +759,9 @@ syscall_reincarnate(kobject_handler_t as_h, u64 user_entry)
                 mutex_release(&CURRENT_PROCESS->lock);
                 return -KERN_ERROR_INVAL;
         }
+
+	/* unlock and relock to prevent deadlock */
         mutex_release(&as->lock);
-
-        LIST_FOREACH_MUT(CURRENT_PROCESS->thread_list, p, __next)
-        {
-                thread_t *t = CONTAINER_OF(p, thread_t, proc_list_node);
-                if (t == CURRENT_THREAD) continue;
-
-                thread_terminate(t);
-
-                while (t->running) {
-                        /* TODO: proper blocking */
-                        sched_resched();
-                }
-
-                thread_destroy(t);
-        }
 
         address_space_t *old_as        = CURRENT_PROCESS->address_space;
         CURRENT_PROCESS->address_space = as;
@@ -1011,11 +818,8 @@ syscall_def(void)
         SYSCALLDEF(SYSCALL_PORT_REQUEST, syscall_port_request);
         SYSCALLDEF(SYSCALL_PORT_RECEIVE, syscall_port_receive);
         SYSCALLDEF(SYSCALL_PORT_RESPONSE, syscall_port_response);
-        SYSCALLDEF(SYSCALL_THREAD_SPAWN, syscall_thread_spawn);
         SYSCALLDEF(SYSCALL_PROCESS_SPAWN, syscall_process_spawn);
-        SYSCALLDEF(SYSCALL_THREAD_EXIT, syscall_thread_exit);
         SYSCALLDEF(SYSCALL_PROCESS_EXIT, syscall_process_exit);
-        SYSCALLDEF(SYSCALL_THREAD_WAIT, syscall_thread_wait);
         SYSCALLDEF(SYSCALL_PROCESS_WAIT, syscall_process_wait);
         SYSCALLDEF(SYSCALL_REINCARNATE, syscall_reincarnate);
         SYSCALLDEF(SYSCALL_FUTEX_WAIT, syscall_futex_wait);

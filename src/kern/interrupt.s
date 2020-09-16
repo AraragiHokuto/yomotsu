@@ -369,7 +369,7 @@ _kernel_ret:
 	iretq
 
 _usermode_ret:
-	call	__thread_on_user_iret
+	call	__process_on_user_iret
 
 	popq	%r11
 	popq	%r10

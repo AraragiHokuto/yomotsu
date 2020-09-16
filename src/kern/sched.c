@@ -20,7 +20,7 @@
 
 struct sched_queue_s {
         spinlock_t  lock;
-        atomic_uint thread_count;
+        atomic_uint process_count;
         list_node_t ready_list[TOTAL_LEVELS];
 };
 
@@ -30,7 +30,7 @@ static sched_queue_t *       queue;
 extern process_t *__kernel_proc;
 
 static uint
-sched_pick_cpu(thread_t *t)
+sched_pick_cpu(process_t *t)
 {
         /* TODO: weight if we should migrate */
         DONTCARE(t);
@@ -38,7 +38,7 @@ sched_pick_cpu(thread_t *t)
         uint ret_count = (uint)-1;
         for (uint i = 0; i < smp_cpu_count(); ++i) {
                 uint i_count =
-                    atomic_load_uint(queue[i].thread_count, __ATOMIC_ACQUIRE);
+                    atomic_load_uint(queue[i].process_count, __ATOMIC_ACQUIRE);
                 if (i_count < ret_count) {
                         ret       = i;
                         ret_count = i_count;
@@ -60,32 +60,32 @@ sched_init(void)
                 for (uint j = 0; j < TOTAL_LEVELS; ++j) {
                         list_head_init(&queue[i].ready_list[j]);
                 }
-                atomic_store_uint(queue[i].thread_count, 0, __ATOMIC_RELEASE);
+                atomic_store_uint(queue[i].process_count, 0, __ATOMIC_RELEASE);
         }
 }
 
 static void
-__do_sched_set_ready(thread_t *thread)
+__do_sched_set_ready(process_t *proc)
 {
-        uint      cpu = sched_pick_cpu(thread);
+        uint      cpu = sched_pick_cpu(proc);
         irqflag_t flag;
         spinlock_lock(&queue[cpu].lock, &flag);
         list_insert(
-            &thread->sched_list_node,
-            queue[cpu].ready_list[thread->sched_data.priority].prev);
-        queue[cpu].thread_count++;
-        thread->sched_data.cpu = cpu;
+            &proc->sched_list_node,
+            queue[cpu].ready_list[proc->sched_data.priority].prev);
+        queue[cpu].process_count++;
+        proc->sched_data.cpu = cpu;
         spinlock_unlock(&queue[cpu].lock, flag);
 }
 
 static void
-__do_sched_remove_ready(thread_t *thread)
+__do_sched_remove_ready(process_t *process)
 {
-        uint      cpu = thread->sched_data.cpu;
+        uint      cpu = process->sched_data.cpu;
         irqflag_t flag;
         spinlock_lock(&queue[cpu].lock, &flag);
-        list_remove(&thread->sched_list_node);
-        queue[cpu].thread_count--;
+        list_remove(&process->sched_list_node);
+        queue[cpu].process_count--;
         spinlock_unlock(&queue[cpu].lock, flag);
 }
 
@@ -101,19 +101,19 @@ __do_sched_remove_ready(thread_t *thread)
         LINEAR_QUANTUM(t->sched_data.priority, c##_LEVEL_MAX, UNIT_QUANTUM_##c)
 
 static u64
-get_quantum(thread_t *thread)
+get_quantum(process_t *proc)
 {
-        switch (thread->sched_data.class) {
+        switch (proc->sched_data.class) {
         case SCHED_CLASS_IDLE:
                 return (u64)-1;
         case SCHED_CLASS_NORMAL:
-                return CALC_QUANTUM(thread, NORMAL);
+                return CALC_QUANTUM(proc, NORMAL);
         case SCHED_CLASS_DRIVER:
-                return CALC_QUANTUM(thread, DRIVER);
+                return CALC_QUANTUM(proc, DRIVER);
         case SCHED_CLASS_RT:
-                return CALC_QUANTUM(thread, RT);
+                return CALC_QUANTUM(proc, RT);
         case SCHED_CLASS_RT_DRIVER:
-                return CALC_QUANTUM(thread, RT_DRIVER);
+                return CALC_QUANTUM(proc, RT_DRIVER);
         default:
                 PANIC("invalid schedule class");
         }
@@ -138,10 +138,10 @@ static u64 get_priority(uint class)
 }
 
 static void
-clampped_priority_change(thread_t *thread, sint delta)
+clampped_priority_change(process_t *proc, sint delta)
 {
-        uint p = thread->sched_data.priority + delta;
-        switch (thread->sched_data.class) {
+        uint p = proc->sched_data.priority + delta;
+        switch (proc->sched_data.class) {
         case SCHED_CLASS_IDLE:
                 p = 0;
 #define CLAMP_CASE(c)                           \
@@ -162,51 +162,50 @@ clampped_priority_change(thread_t *thread, sint delta)
                 PANIC("invalid schedule class");
         }
 
-        thread->sched_data.priority = p;
+        proc->sched_data.priority = p;
 }
 
 static void
-thread_bump_blocking(thread_t *thread)
+thread_bump_blocking(process_t *proc)
 {
-        clampped_priority_change(thread, 1);
+        clampped_priority_change(proc, 1);
 }
 
 /* Assume holding queue lock */
 static void
-__do_sched_update_position(thread_t *thread)
+__do_sched_update_position(process_t *proc)
 {
-        list_remove(&thread->sched_list_node);
+        list_remove(&proc->sched_list_node);
         list_insert(
-            &thread->sched_list_node,
-            queue[smp_current_cpu_id()]
-                .ready_list[thread->sched_data.priority]
-                .prev);
+            &proc->sched_list_node, queue[smp_current_cpu_id()]
+                                        .ready_list[proc->sched_data.priority]
+                                        .prev);
 }
 
 void
-sched_enter(thread_t *thread)
+sched_enter(process_t *proc)
 {
-        thread->sched_data.priority = get_priority(thread->sched_data.class);
-        __do_sched_set_ready(thread);
+        proc->sched_data.priority = get_priority(proc->sched_data.class);
+        __do_sched_set_ready(proc);
 }
 
 void
-sched_set_ready(thread_t *thread)
+sched_set_ready(process_t *proc)
 {
-        __do_sched_set_ready(thread);
+        __do_sched_set_ready(proc);
 }
 
 void
-sched_set_blocking(thread_t *thread)
+sched_set_blocking(process_t *proc)
 {
-        __do_sched_remove_ready(thread);
-        thread_bump_blocking(thread);
+        __do_sched_remove_ready(proc);
+        thread_bump_blocking(proc);
 }
 
 void
-sched_leave(thread_t *thread)
+sched_leave(process_t *proc)
 {
-        __do_sched_remove_ready(thread);
+        __do_sched_remove_ready(proc);
 }
 
 static void
@@ -216,20 +215,20 @@ sched_idle_main(void)
         while (1) asm volatile("hlt");
 }
 
-void __thread_load_context(thread_t *thread);
+void __process_load_context(process_t *proc);
 
 #define CURRENT_QUEUE (queue + smp_current_cpu_id())
 #define READY_LIST(l) (CURRENT_QUEUE->ready_list + (l))
 
-static thread_t *
+static process_t *
 sched_pick_next(void)
 {
-        thread_t *ret = NULL;
+        process_t *ret = NULL;
         for (int i = TOTAL_LEVELS - 1; i >= 0; --i) {
                 if (list_is_empty(READY_LIST(i))) { continue; }
 
                 ret = CONTAINER_OF(
-                    READY_LIST(i)->next, thread_t, sched_list_node);
+                    READY_LIST(i)->next, process_t, sched_list_node);
                 break;
         }
 
@@ -246,7 +245,7 @@ sched_should_preempt(void)
                 if (!list_is_empty(READY_LIST(i))) { break; }
         }
 
-        return i > CURRENT_THREAD->sched_data.priority;
+        return i > CURRENT_PROCESS->sched_data.priority;
 }
 
 void
@@ -260,28 +259,28 @@ sched_tick(void *_data)
         spinlock_lock(&CURRENT_QUEUE->lock, &flag);
 
         if (sched_should_preempt()) {
-                thread_t *next = sched_pick_next();
-                ASSERT(next != CURRENT_THREAD);
-                __do_sched_update_position(CURRENT_THREAD);
+                process_t *next = sched_pick_next();
+                ASSERT(next != CURRENT_PROCESS);
+                __do_sched_update_position(CURRENT_PROCESS);
                 spinlock_unlock(&CURRENT_QUEUE->lock, flag);
 
                 sched_disable();
                 next->sched_data.quantum = get_quantum(next);
-                thread_switch_context(next);
+                process_switch_context(next);
                 return;
         }
 
-        CURRENT_THREAD->sched_data.quantum -= 10;
-        if (!CURRENT_THREAD->sched_data.quantum) {
-                clampped_priority_change(CURRENT_THREAD, -1);
-                __do_sched_update_position(CURRENT_THREAD);
-                thread_t *next = sched_pick_next();
-                if (next != CURRENT_THREAD) {
+        CURRENT_PROCESS->sched_data.quantum -= 10;
+        if (!CURRENT_PROCESS->sched_data.quantum) {
+                clampped_priority_change(CURRENT_PROCESS, -1);
+                __do_sched_update_position(CURRENT_PROCESS);
+                process_t *next = sched_pick_next();
+                if (next != CURRENT_PROCESS) {
                         spinlock_unlock(&CURRENT_QUEUE->lock, flag);
 
                         sched_disable();
                         next->sched_data.quantum = get_quantum(next);
-                        thread_switch_context(next);
+                        process_switch_context(next);
                         return;
                 }
         }
@@ -296,33 +295,34 @@ sched_resched(void)
 
         irqflag_t flag;
         spinlock_lock(&CURRENT_QUEUE->lock, &flag);
-        thread_t *next = sched_pick_next();
+        process_t *next = sched_pick_next();
         spinlock_unlock(&CURRENT_QUEUE->lock, flag);
 
-        ASSERT(next->state == THREAD_STATE_READY);
+        ASSERT(next->state == PROCESS_STATE_READY);
 
         next->sched_data.quantum = get_quantum(next);
-        if (next != CURRENT_THREAD) {
+        if (next != CURRENT_PROCESS) {
                 sched_disable();
-                thread_switch_context(next);
+                process_switch_context(next);
         }
 }
 
 void
 sched_start(void)
 {
-        thread_t *idle_thread            = thread_create(__kernel_proc);
-        idle_thread->sched_data.class    = SCHED_CLASS_IDLE;
-        idle_thread->sched_data.priority = 0;
-        idle_thread->sched_data.quantum  = get_quantum(idle_thread);
-        idle_thread->state               = THREAD_STATE_READY;
+        process_t *idle_proc           = process_create(NULL);
+        idle_proc->address_space       = __kernel_proc->address_space;
+        idle_proc->sched_data.class    = SCHED_CLASS_IDLE;
+        idle_proc->sched_data.priority = 0;
+        idle_proc->sched_data.quantum  = get_quantum(idle_proc);
+        idle_proc->state               = PROCESS_STATE_READY;
 
         irqflag_t flag;
         spinlock_lock(&queue[smp_current_cpu_id()].lock, &flag);
         list_insert(
-            &idle_thread->sched_list_node,
+            &idle_proc->sched_list_node,
             &queue[smp_current_cpu_id()].ready_list[0]);
-        __thread_load_context(idle_thread);
+        __process_load_context(idle_proc);
         spinlock_unlock(&queue[smp_current_cpu_id()].lock, flag);
 
         kprintf(

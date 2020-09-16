@@ -13,7 +13,7 @@
 #include <kern/syscall.h>
 #include <kern/timer.h>
 
-void init_start(thread_t *self);
+void init_start(process_t *self);
 
 void
 kmain_bsp(u64 rsdp, u64 xsdp)
@@ -63,14 +63,11 @@ kmain_bsp(u64 rsdp, u64 xsdp)
         process_t *proc = process_create(NULL);
         ASSERT(proc);
         proc->address_space = as;
+        proc->sched_data.class = SCHED_CLASS_NORMAL;
 
         vm_address_space_load(proc->address_space);
 
-        thread_t *thread = thread_create(proc);
-        ASSERT(thread);
-        thread->sched_data.class = SCHED_CLASS_NORMAL;
-
-        init_start(thread);
+        init_start(proc);
 
         PANIC("kmain reached bottom!");
 }

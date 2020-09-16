@@ -6,11 +6,10 @@
 /* stub content for owner field */
 #define STUB_THREAD ((void *)0xffef000000000000)
 
-static thread_t *
-get_current_thread(void)
+static process_t *
+get_current_proc(void)
 {
-        return percpu()->current_thread ? percpu()->current_thread
-                                        : STUB_THREAD;
+        return CURRENT_PROCESS ? CURRENT_PROCESS : STUB_THREAD;
 }
 
 void
@@ -23,7 +22,7 @@ boolean
 mutex_try_acquire(mutex_t *mutex)
 {
         boolean success;
-        void *  desired  = get_current_thread();
+        void *  desired  = get_current_proc();
         void *  expected = NULL;
         success          = atomic_cmpxchg_strong_ptr(
             mutex->owner, expected, desired, __ATOMIC_SEQ_CST,
@@ -40,14 +39,14 @@ mutex_acquire(mutex_t *mutex)
         boolean success = B_FALSE;
         while (!success) {
                 for (uint i = 0; i < MUTEX_ADAPTIVE_SPIN; ++i) {
-                        void *desired  = get_current_thread();
+                        void *desired  = get_current_proc();
                         void *expected = NULL;
                         success        = atomic_cmpxchg_weak_ptr(
                             mutex->owner, expected, desired, __ATOMIC_SEQ_CST,
                             __ATOMIC_SEQ_CST);
                         if (success) break;
 
-                        ASSERT(expected != get_current_thread());
+                        ASSERT(expected != get_current_proc());
                 }
 
                 sched_resched();
@@ -60,9 +59,9 @@ mutex_release(mutex_t *mutex)
         void *owner = atomic_xchg_ptr(mutex->owner, NULL, __ATOMIC_SEQ_CST);
 
         VERIFY(
-            owner == get_current_thread(),
+            owner == get_current_proc(),
             "invalid release: 0x%x trying to release mutex owned by 0x%x",
-            get_current_thread(), owner);
+            get_current_proc(), owner);
 }
 
 void

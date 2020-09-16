@@ -12,119 +12,57 @@
 
 #define KERNEL_STACK_SIZE 16384 /* 16KB */
 
-extern void __thread_do_switch(
+extern void __process_do_switch(
     void *dst_rsp, void *dst_rip, void *src_rsp, void *src_rip,
-    thread_t *target);
-extern void __thread_do_start(
-    void *rsp, void *rip, void *entry, void *data, thread_t *target);
+    process_t *current);
+extern void __process_do_start(
+    void *rsp, void *rip, void *entry, void *data, process_t *current);
 
 process_t *__kernel_proc;
 
-static void __thread_on_terminate(void);
 static void __process_on_terminate(void);
 
-thread_t *
-thread_create(process_t *container)
-{
-        thread_t *self = kmem_alloc(sizeof(thread_t));
-        if (!self) return NULL;
-
-        byte *kernel_stack = kmem_alloc(KERNEL_STACK_SIZE);
-        if (!kernel_stack) {
-                kmem_free(self);
-                return NULL;
-        };
-
-        byte *simd_state = simd_alloc_state_area();
-        if (!simd_state) {
-                kmem_free(kernel_stack);
-                kmem_free(self);
-                return NULL;
-        }
-
-        byte *kernel_rsp   = kernel_stack + KERNEL_STACK_SIZE - 8;
-        *(u64 *)kernel_rsp = 0;
-
-        mutex_init(&self->lock);
-
-        self->kernel_stack = kernel_rsp;
-        self->container    = container;
-
-        self->retval         = 0;
-        self->terminate_flag = B_FALSE;
-        self->running        = B_TRUE;
-
-        self->wait_count = 0;
-
-        self->cpu_state.simd_state = simd_state;
-
-        self->tid = ++container->next_tid;
-        list_insert(&self->proc_list_node, &container->thread_list);
-        ++container->thread_count;
-        ++container->running_thread_count;
-
-        return self;
-}
-
 void
-thread_destroy(thread_t *thread)
+__process_save_context(process_t *target)
 {
-        list_remove(&thread->proc_list_node);
-
-        atomic_dec_fetch_uint(
-            thread->container->thread_count, __ATOMIC_RELAXED);
-
-        simd_free_state_area(thread->cpu_state.simd_state);
-        kmem_free((byte *)thread->kernel_stack - KERNEL_STACK_SIZE + 8);
-        kmem_free(thread);
-}
-
-void
-__thread_save_context(thread_t *target)
-{
-        thread_t *current = CURRENT_THREAD;
+        process_t *current = CURRENT_PROCESS;
 
         ASSERT(current != target);
 
         interrupt_save_flag(&current->cpu_state.interrupt_flag);
         interrupt_disable_preemption();
 
-        /*
-         * save FSBase and KernelGSBase
-         * (which holds userland GSBase value at this point)
-         */
+        /* save FSBase */
         current->cpu_state.fsbase = rdmsr(0xc0000100);
-        current->cpu_state.gsbase = rdmsr(0xc0000102);
 
-        __thread_do_switch(
+        __process_do_switch(
             &current->cpu_state.rsp, &current->cpu_state.rip,
             target->cpu_state.rsp, target->cpu_state.rip, current);
 }
 
 void
-__thread_load_context(thread_t *target)
+__process_load_context(process_t *target)
 {
         /* assume interrupt disabled */
-        thread_t *prev = CURRENT_THREAD;
-        CURRENT_THREAD = target;
+        process_t *prev = CURRENT_PROCESS;
+        CURRENT_PROCESS = target;
 
         ASSERT(prev != target);
 
-        if (prev && prev->state == THREAD_STATE_EXITED) {
-                prev->running = B_FALSE;
+        if (prev && prev->terminate_flag) {
+                prev->state = PROCESS_STATE_EXITED;
+
+                /* wake parent in case it's being waited */
+                futex_kwake(&prev->state, 1);
         }
 
         percpu()->tss->rsp0            = (u64)target->kernel_stack;
         percpu()->current_kernel_stack = target->kernel_stack;
 
-        vm_address_space_load(CURRENT_ADDRESS_SPACE);
+        vm_address_space_load(target->address_space);
 
-        /*
-         * load userland FSBase and GSBase value
-         * (latter goes into KernelGSBase MSR)
-         */
+        /* load userland FSBase value */
         wrmsr(0xc0000100, target->cpu_state.fsbase);
-        wrmsr(0xc0000102, target->cpu_state.gsbase);
 
         interrupt_load_flag(target->cpu_state.interrupt_flag);
 
@@ -132,56 +70,36 @@ __thread_load_context(thread_t *target)
 }
 
 void
-__thread_on_terminate(void)
-{
-        uint rc = atomic_dec_fetch_uint(
-            CURRENT_PROCESS->running_thread_count, __ATOMIC_ACQ_REL);
-        if (!rc) { __process_on_terminate(); }
-
-        sched_leave(CURRENT_THREAD);
-        sched_resched();
-        PANIC("__thread_on_terminate reached end");
-}
-
-void
-__thread_on_sysret(void)
+__process_on_sysret(void)
 {
         if (atomic_load_boolean(
-                CURRENT_THREAD->terminate_flag, __ATOMIC_ACQUIRE)) {
-                CURRENT_THREAD->state = THREAD_STATE_EXITED;
-                __thread_on_terminate();
+                CURRENT_PROCESS->terminate_flag, __ATOMIC_ACQUIRE)) {
+                __process_on_terminate();
         }
 }
 
 void
-__thread_on_user_iret(void)
+__process_on_user_iret(void)
 {
         if (atomic_load_boolean(
-                CURRENT_THREAD->terminate_flag, __ATOMIC_ACQUIRE)) {
-                CURRENT_THREAD->state = THREAD_STATE_EXITED;
-                __thread_on_terminate();
+                CURRENT_PROCESS->terminate_flag, __ATOMIC_ACQUIRE)) {
+                __process_on_terminate();
         }
 }
 
 void
-thread_switch_context(thread_t *target)
+process_switch_context(process_t *target)
 {
-        __thread_save_context(target);
+        __process_save_context(target);
 }
 
 void
-thread_start(thread_t *target, void *entry, void *data)
+process_start(process_t *target, void *entry, void *data)
 {
         target->cpu_state.rsp = target->kernel_stack;
-        __thread_do_start(
+        __process_do_start(
             &target->cpu_state.rsp, &target->cpu_state.rip, entry, data,
             target);
-}
-
-void
-thread_terminate(thread_t *thread)
-{
-        atomic_store_boolean(thread->terminate_flag, B_TRUE, __ATOMIC_RELEASE);
 }
 
 #define PID_MAX            32768
@@ -285,6 +203,7 @@ process_init(void)
             "failed to allocate address space for kernel proc");
 }
 
+/* assume holding parent's lock */
 process_t *
 process_create(process_t *parent)
 {
@@ -297,29 +216,50 @@ process_create(process_t *parent)
                 return NULL;
         }
 
-        int kobject_error = KERN_OK;
-        if (!kobject_init(ret, &kobject_error)) {
+        byte *kernel_stack = kmem_alloc(KERNEL_STACK_SIZE);
+        if (!kernel_stack) {
                 kmem_free(ret);
                 free_pid(pid);
                 return NULL;
         }
 
+        byte *simd_state = simd_alloc_state_area();
+        if (!simd_state) {
+                kmem_free(kernel_stack);
+                kmem_free(ret);
+                return NULL;
+        }
+
+        int kobject_error = KERN_OK;
+        if (!kobject_init(ret, &kobject_error)) {
+                simd_free_state_area(simd_state);
+                kmem_free(kernel_stack);
+                kmem_free(ret);
+                free_pid(pid);
+                return NULL;
+        }
+
+        byte *kernel_rsp   = kernel_stack + KERNEL_STACK_SIZE - 8;
+        *(u64 *)kernel_rsp = 0;
+
         mutex_init(&ret->lock);
 
-        ret->pid      = pid;
-        ret->next_tid = 0;
+        ret->pid          = pid;
+        ret->retval       = 0;
 
-        ret->thread_count         = 0;
-        ret->running_thread_count = 0;
+        ret->terminate_flag = B_FALSE;
 
-        ret->wait_count = 0;
+        list_head_init(&ret->sched_list_node);
 
-        ret->retval = 0;
+        ret->cpu_state.simd_state = simd_state;
 
-        ret->reincarnation_flag = B_FALSE;
+        ret->kernel_stack = kernel_rsp;
 
-        list_head_init(&ret->thread_list);
+	ret->address_space = NULL;
+
+        list_head_init(&ret->sibling_list_node);
         list_head_init(&ret->child_list_head);
+        ret->exited_child_count = 0;
 
         if (parent) {
                 ret->parent = parent;
@@ -329,22 +269,23 @@ process_create(process_t *parent)
         return ret;
 }
 
+/* assume holding parent's lock */
 void
 process_destroy(process_t *process)
 {
-        ASSERT(list_is_empty(&process->thread_list));
         ASSERT(list_is_empty(&process->child_list_head));
 
         ASSERT(process->parent);
-        mutex_acquire(&process->parent->lock);
         list_remove(&process->sibling_list_node);
-        mutex_release(&process->parent->lock);
 
         if (process->address_space
             && !atomic_dec_fetch_uint(
                 process->address_space->ref_count, __ATOMIC_ACQ_REL)) {
                 vm_address_space_destroy(process->address_space);
         }
+
+        kmem_free((byte*)process->kernel_stack - KERNEL_STACK_SIZE + 8);
+        simd_free_state_area(process->cpu_state.simd_state);
 
         free_pid(process->pid);
         kmem_free(process);
@@ -354,12 +295,7 @@ process_destroy(process_t *process)
 void
 process_terminate(process_t *process)
 {
-        kprintf("kernel process termination: %d\n", process->pid);
-        LIST_FOREACH(process->thread_list, p)
-        {
-                thread_t *t = CONTAINER_OF(p, thread_t, proc_list_node);
-                thread_terminate(t);
-        }
+        atomic_store_boolean(process->terminate_flag, B_TRUE, __ATOMIC_RELEASE);
 }
 
 static void
@@ -368,6 +304,8 @@ __process_on_terminate(void)
         if (!CURRENT_PROCESS->parent) {
                 PANIC("process with NULL parent terminated");
         }
+
+	sched_disable();
 
         mutex_acquire(&CURRENT_PROCESS->lock);
         kobject_cleanup(CURRENT_PROCESS);
@@ -387,8 +325,16 @@ __process_on_terminate(void)
                 mutex_release(&child->lock);
         }
 
+        ++CURRENT_PROCESS->parent->exited_child_count;
+        futex_kwake(&CURRENT_PROCESS->parent->exited_child_count, 1);
+
         mutex_release(&CURRENT_PROCESS->parent->lock);
 
         mutex_release(&CURRENT_PROCESS->lock);
 
+        sched_leave(CURRENT_PROCESS);
+	sched_enable();
+        sched_resched();
+
+        PANIC("PROCESS_ON_TERMINATE reached end");
 }

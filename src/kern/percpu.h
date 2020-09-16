@@ -18,7 +18,7 @@ typedef struct percpu_data_s {
         gdt_t *gdt;
         tss_t *tss;
 
-        thread_t *current_thread;
+        process_t *current_process;
         void *    current_kernel_stack;
 
         /* timer heap */

@@ -36,7 +36,7 @@ __syscall_entry_invalid:
 
 __syscall_entry_valid:
 	pushq	%rax
-	call	__thread_on_sysret
+	call	__process_on_sysret
 	popq	%rax
 
 	popq	%r11
@@ -55,7 +55,7 @@ __reincarnate_return:
 	pushfq
 	pushq	%rdi
 
-	call	__thread_on_sysret
+	call	__process_on_sysret
 
 	popq	%rcx
 	popq	%r11
@@ -66,14 +66,14 @@ __reincarnate_return:
 	swapgs
 	sysretq
 
-.global	__thread_spawn_start
-.type	__thread_spawn_start, @function
-__thread_spawn_start:
+.global	__process_spawn_start
+.type	__process_spawn_start, @function
+__process_spawn_start:
 	cli
 	pushfq
 	pushq	%rdi
 
-	call	__thread_on_sysret
+	call	__process_on_sysret
 
 	popq	%rcx
 	popq	%r11
