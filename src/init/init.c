@@ -10,6 +10,15 @@ char *argv[] = {
 
 extern uint8_t _binary_stub_proc_bin_start[];
 
+/* stub symbol for crt */
+typedef void (*__crt_func_ptr_t)(void);
+__crt_func_ptr_t __preinit_array_start = NULL;
+__crt_func_ptr_t __preinit_array_end = NULL;
+__crt_func_ptr_t __init_array_start = NULL;
+__crt_func_ptr_t __init_array_end = NULL;
+__crt_func_ptr_t __fini_array_start = NULL;
+__crt_func_ptr_t __fini_array_end = NULL;
+
 int
 __init_main(void)
 {

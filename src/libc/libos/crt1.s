@@ -9,7 +9,9 @@ _start:
 	xorq	%rbp, %rbp
 	pushq	%rbp
 
-	callq	__libc_init
+	callq	__crt_preinit
+
+	callq	__crt_init
 
 	callq	__main_wrapper
 
