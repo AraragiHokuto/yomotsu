@@ -298,6 +298,14 @@ process_terminate(process_t *process)
         atomic_store_boolean(process->terminate_flag, B_TRUE, __ATOMIC_RELEASE);
 }
 
+void
+process_raise_exception(process_t *process, int exception)
+{
+	/* stub */
+	kprintf("Process killed due to exception: %d\n", exception);
+	process_terminate(process);
+}
+
 static void
 __process_on_terminate(void)
 {

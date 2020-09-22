@@ -317,9 +317,9 @@ port_server_close(port_server_ref_t *ref)
         if (ref->req) {
                 port_request_t *req =
                     atomic_xchg_ptr(ref->req, NULL, __ATOMIC_ACQ_REL);
-                req->error = KERN_ERROR_PORT_CLOSED;
+                req->error = KERN_ERROR_PORT_CANCELED;
                 atomic_store_boolean(req->finished, B_TRUE, __ATOMIC_SEQ_CST);
-		futex_kwake(&req->finished, 1);
+                futex_kwake(&req->finished, 1);
                 ref->req = NULL;
         }
 
@@ -345,7 +345,7 @@ port_server_close(port_server_ref_t *ref)
 void
 port_client_close(port_client_ref_t *ref)
 {
-	kmem_free(ref);
+        kmem_free(ref);
 }
 
 /* Assume request verified */
@@ -380,6 +380,15 @@ port_request(port_client_ref_t *ref, int *error)
                 futex_kwait(&ref->req.finished, B_FALSE);
         }
 
+        if (atomic_xchg_ptr(serv->req, NULL, __ATOMIC_SEQ_CST)) {
+                /* serv->req was not NULL, indicate a timeout */
+                *error = -KERN_ERROR_TIMEOUT;
+                return;
+        } else {
+                /* serv->req was already NULL, response en route */
+                futex_kwait(&ref->req.finished, B_FALSE);
+        }
+
         if (ref->req.error != KERN_OK) { *error = ref->req.error; }
 
         return;
@@ -404,13 +413,14 @@ port_receive(port_server_ref_t *ref, void *buf, size_t buflen)
                 if (LIKELY(!ref->req)) { futex_kwait((void *)&ref->req, 0); }
 
                 port_request_t *ret = ref->req;
-                ref->req            = NULL;
 
                 if (ret->data_size > buflen) {
                         /* Data too large; refuse this one */
                         ret->error = KERN_ERROR_PORT_DATA_TOO_LONG;
+                        atomic_xchg_ptr(ref->req, NULL, __ATOMIC_SEQ_CST);
                         atomic_store_boolean(
                             ret->finished, B_TRUE, __ATOMIC_SEQ_CST);
+                        futex_kwake(&ret->finished, 1);
                         continue;
                 }
 
@@ -420,15 +430,21 @@ port_receive(port_server_ref_t *ref, void *buf, size_t buflen)
                             ret->sender->holder->address_space,
                             ret->data_sender_vaddr, ret->data_size);
                         if (UNLIKELY(copy_ret != 0)) {
+                                atomic_xchg_ptr(
+                                    ref->req, NULL, __ATOMIC_SEQ_CST);
                                 if (copy_ret == 1) {
                                         mutex_acquire(
                                             &ret->sender->holder->lock);
-                                        process_terminate(ret->sender->holder);
+                                        process_raise_exception(
+                                            ret->sender->holder,
+                                            PROC_EXCEPTION_ACCESS_VIOLATION);
                                         mutex_release(
                                             &ret->sender->holder->lock);
                                 } else {
                                         mutex_acquire(&CURRENT_PROCESS->lock);
-                                        process_terminate(CURRENT_PROCESS);
+                                        process_raise_exception(
+                                            ret->sender->holder,
+                                            PROC_EXCEPTION_ACCESS_VIOLATION);
                                         mutex_release(&CURRENT_PROCESS->lock);
                                 }
                         }
@@ -439,9 +455,18 @@ port_receive(port_server_ref_t *ref, void *buf, size_t buflen)
 }
 
 void
-port_response(port_request_t *req, void *retval, size_t retval_size, int *error)
+port_response(
+    port_server_ref_t *ref, u64 retval_small, void *retval, size_t retval_size,
+    int *error)
 {
+        port_request_t *req = atomic_xchg_ptr(ref->req, NULL, __ATOMIC_SEQ_CST);
+        if (!req) {
+                *error = KERN_ERROR_PORT_CANCELED;
+                return;
+        }
         ASSERT(!atomic_load_boolean(req->finished, __ATOMIC_ACQUIRE));
+
+        req->val_small = retval_small;
 
         if (retval && retval_size > req->retval_size) {
                 *error = KERN_ERROR_INVAL;
@@ -456,13 +481,17 @@ port_response(port_request_t *req, void *retval, size_t retval_size, int *error)
                 if (UNLIKELY(copy_ret != 0)) {
                         if (copy_ret == 1) {
                                 mutex_acquire(&req->sender->holder->lock);
-                                process_terminate(req->sender->holder);
+                                process_raise_exception(
+                                    req->sender->holder,
+                                    PROC_EXCEPTION_ACCESS_VIOLATION);
                                 mutex_release(&req->sender->holder->lock);
-                                /* TODO: error report */
+                                *error = KERN_ERROR_PORT_CANCELED;
                                 return;
                         } else {
                                 mutex_acquire(&CURRENT_PROCESS->lock);
-                                process_terminate(CURRENT_PROCESS);
+                                process_raise_exception(
+                                    CURRENT_PROCESS,
+                                    PROC_EXCEPTION_ACCESS_VIOLATION);
                                 mutex_release(&CURRENT_PROCESS->lock);
                                 return;
                         }
@@ -470,5 +499,5 @@ port_response(port_request_t *req, void *retval, size_t retval_size, int *error)
         }
 
         atomic_store_boolean(req->finished, B_TRUE, __ATOMIC_SEQ_CST);
-	futex_kwake(&req->finished, 1);
+        futex_kwake(&req->finished, 1);
 }

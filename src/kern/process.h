@@ -27,6 +27,13 @@ enum PROCESS_STATE {
         PROCESS_STATE_EXITED
 };
 
+enum PROCESS_EXCEPTION {
+	PROC_EXCEPTION_NONE = 0,
+	PROC_EXCEPTION_DIV_BY_ZERO,
+	PROC_EXCEPTION_PROTECTION,
+	PROC_EXCEPTION_ACCESS_VIOLATION,
+};
+
 struct process_s {
         mutex_t lock;
 
@@ -72,6 +79,7 @@ void       process_destroy(process_t *process);
 void       process_start(process_t *process, void *entry, void *data);
 void       process_switch_context(process_t *process);
 void       process_terminate(process_t *process);
+void       process_raise_exception(process_t *process, int exception);
 
 #define CURRENT_PROCESS       (percpu()->current_process)
 #define CURRENT_ADDRESS_SPACE (CURRENT_PROCESS->address_space)

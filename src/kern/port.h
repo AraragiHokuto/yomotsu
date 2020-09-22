@@ -81,7 +81,8 @@ void               port_client_close(port_client_ref_t *ref);
 void               port_request(port_client_ref_t *ref, int *error);
 port_request_t *port_receive(port_server_ref_t *ref, void *buf, size_t buflen);
 void            port_response(
-               port_request_t *req, void *retval, size_t retval_size, int *error);
+               port_server_ref_t *ref, u64 retval_small, void *retval, size_t retval_size,
+               int *error);
 
 #else /* _KERNEL */
 

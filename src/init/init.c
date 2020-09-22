@@ -43,8 +43,7 @@ __init_main(void)
                 port_request_t buffer;
 
 		printf("receiving\n");
-                kobject_t req = port_receive(port, &buffer, NULL, 0);
-		if (req < 0) {
+                if (port_receive(port, &buffer, NULL, 0) < 0) {
                         perror("port_receive()");
                         process_exit(-1);
                 }
@@ -53,7 +52,7 @@ __init_main(void)
                     "received request from port by %ld: value %lu\n",
                     buffer.sender_pid, buffer.val_small);
 
-		if (port_response(req, buffer.val_small, NULL, 0) != 0) {
+		if (port_response(port, buffer.val_small, NULL, 0) != 0) {
 			perror("port_response()");
 			break;
 		}

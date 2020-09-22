@@ -52,7 +52,7 @@ port_request(port_t port, port_request_t *request)
         return 0;
 }
 
-kobject_t
+int
 port_receive(
     port_t port, port_request_t *buffer, void *data_buffer, size_t buffer_size)
 {
@@ -63,12 +63,12 @@ port_receive(
                 return -1;
         }
 
-        return ret;
+        return 0;
 }
 
 int
 port_response(
-    kobject_t request, int64_t retval, void *ret_data, size_t ret_data_size)
+    kobject_t request, uint64_t retval, void *ret_data, size_t ret_data_size)
 {
         int64_t ret =
             syscall_port_response(request, retval, ret_data, ret_data_size);

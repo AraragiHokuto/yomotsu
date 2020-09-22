@@ -352,6 +352,15 @@ strerror(int errnum)
 		return "Range error;";
 	case EOVERFLOW:
 		return "Overflow";
+
+	case KERN_ERROR_PORT_NAME_OCCUPIED:
+		return "port error: port name already occupied";
+	case KERN_ERROR_PORT_DATA_TOO_LONG:
+		return "port error: data too long";
+	case KERN_ERROR_PORT_CLOSED:
+		return "port error: port already closed";
+	case KERN_ERROR_PORT_CANCELED:
+		return "port error: request cancelled";
 	default:
 		return "Unknown error";
 	}

@@ -26,11 +26,11 @@ kobject_t syscall_port_create(char *name, size_t namelen);
 kobject_t syscall_port_open(char *name, size_t namelen);
 int64_t   syscall_port_close(kobject_t port);
 int64_t   syscall_port_request(kobject_t port, port_request_t *request);
-kobject_t syscall_port_receive(
-    kobject_t port, port_request_t *request_buffer, void *data_buffer,
-    size_t buffer_size);
+int64_t   syscall_port_receive(
+      kobject_t port, port_request_t *request_buffer, void *data_buffer,
+      size_t buffer_size);
 int64_t syscall_port_response(
-    kobject_t request, int64_t retval, void *ret_data, size_t ret_data_size);
+    kobject_t request, uint64_t retval, void *ret_data, size_t ret_data_size);
 pid_t   syscall_process_spawn(kobject_t address_space, void *entry_point);
 void    syscall_process_exit(uint64_t retval) __attribute__((noreturn));
 int64_t syscall_process_wait(pid_t pid, process_state_t *state);

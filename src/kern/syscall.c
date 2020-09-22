@@ -203,7 +203,6 @@ syscall_mtransfer(
         }
 
         if (vaddr_d >= (uintptr)USERLAND_VADDR_END) {
-                kprintf("vaddr_d = %x\n", vaddr_d);
                 return -KERN_ERROR_UNAUTH;
         }
 
@@ -212,50 +211,32 @@ syscall_mtransfer(
         }
 
         if ((vaddr_d + size) > (uintptr)USERLAND_VADDR_END) {
-                kprintf(
-                    "vaddr_d + size = %x, USERLAND_VADDR_END = %x\n",
-                    vaddr_d + size, USERLAND_VADDR_END);
                 return -KERN_ERROR_UNAUTH;
         }
 
         if (vaddr_s < (uintptr)USERLAND_VADDR_BEGIN) {
-                kprintf("mtransfer: src invalid\n");
                 return -KERN_ERROR_INVAL;
         }
 
         if (vaddr_d < (uintptr)USERLAND_VADDR_BEGIN) {
-                kprintf("mtransfer: dst invalid: %d\n", vaddr_d);
                 return -KERN_ERROR_INVAL;
         }
 
-        if (VM_OFFSET_PAGE_2M(vaddr_s) != 0) {
-                kprintf("mtransfer: src not aligned\n");
-                return -KERN_ERROR_INVAL;
-        }
+        if (VM_OFFSET_PAGE_2M(vaddr_s) != 0) { return -KERN_ERROR_INVAL; }
 
-        if (VM_OFFSET_PAGE_2M(vaddr_d) != 0) {
-                kprintf("mtransfer: dst not aligned: %x\n", vaddr_d);
-                return -KERN_ERROR_INVAL;
-        }
+        if (VM_OFFSET_PAGE_2M(vaddr_d) != 0) { return -KERN_ERROR_INVAL; }
 
-        if (flag & ~USER_ALLOWED_FLAGS) {
-                kprintf(
-                    "flag = %x, flag & ~USER_ALLOWED_FLAGS: %x\n", flag,
-                    flag & ~USER_ALLOWED_FLAGS);
-                return -KERN_ERROR_UNAUTH;
-        }
+        if (flag & ~USER_ALLOWED_FLAGS) { return -KERN_ERROR_UNAUTH; }
 
         mutex_acquire(&CURRENT_PROCESS->lock);
         address_space_t *src = as_lock_fetch(sh);
         if (!src) {
-                kprintf("mtransfer: failed to fetch src\n");
                 mutex_release(&CURRENT_PROCESS->lock);
                 return -KERN_ERROR_INVAL;
         }
 
         address_space_t *dst = as_lock_fetch(dh);
         if (!dst) {
-                kprintf("mtransfer: failed to fetch dst\n");
                 mutex_release(&src->lock);
                 mutex_release(&CURRENT_PROCESS->lock);
                 return -KERN_ERROR_INVAL;
@@ -278,7 +259,6 @@ syscall_mtransfer(
         uintptr di = vaddr_d;
         for (size_t mapped = 0; mapped < size; mapped += KMEM_PAGE_SIZE) {
                 if (!vm_is_mapped(src, (void *)si)) {
-                        kprintf("mtransfer: src not mapped\n");
                         vm_unmap_n(dst, (void *)vaddr_d, mapped);
                         mutex_release(&src->lock);
                         mutex_release(&dst->lock);
@@ -286,7 +266,6 @@ syscall_mtransfer(
                 }
 
                 if (vm_is_mapped(dst, (void *)di)) {
-                        kprintf("mtransfer: dst already mapped\n");
                         vm_unmap_n(dst, (void *)vaddr_d, mapped);
                         mutex_release(&src->lock);
                         mutex_release(&dst->lock);
@@ -350,8 +329,8 @@ syscall_port_create(char *name, size_t namelen)
 
         char namebuf[PORT_NAME_MAX_LEN];
         if (!user_memory_read(CURRENT_ADDRESS_SPACE, namebuf, name, namelen)) {
-                /* TODO: kill process */
-                PANIC("unimplemented error handling");
+                process_raise_exception(
+                    CURRENT_PROCESS, PROC_EXCEPTION_ACCESS_VIOLATION);
         }
         namebuf[namelen] = '\0';
 
@@ -385,8 +364,8 @@ syscall_port_open(char *name, size_t namelen)
 
         char namebuf[PORT_NAME_MAX_LEN];
         if (!user_memory_read(CURRENT_ADDRESS_SPACE, namebuf, name, namelen)) {
-                /* TODO: kill process */
-                PANIC("unimplemented error handling");
+                process_raise_exception(
+                    CURRENT_PROCESS, PROC_EXCEPTION_ACCESS_VIOLATION);
         }
         namebuf[namelen] = '\0';
 
@@ -480,8 +459,8 @@ syscall_port_request(kobject_handler_t handler, port_request_user_t *_req)
         if (!user_memory_read(
                 CURRENT_ADDRESS_SPACE, &user_req, _req,
                 sizeof(port_request_user_t))) {
-                /* TODO: kill process */
-                PANIC("unimplemented process kill");
+                process_raise_exception(
+                    CURRENT_PROCESS, PROC_EXCEPTION_ACCESS_VIOLATION);
         }
 
         if (obj->type == KOBJ_TYPE_PORT_IFCE) {
@@ -492,7 +471,8 @@ syscall_port_request(kobject_handler_t handler, port_request_user_t *_req)
                         CURRENT_ADDRESS_SPACE, user_req.data_addr,
                         user_req.data_size)) {
                         mutex_release(&CURRENT_ADDRESS_SPACE->lock);
-                        PANIC("unimplemented process kill");
+                        process_raise_exception(
+                            CURRENT_PROCESS, PROC_EXCEPTION_ACCESS_VIOLATION);
                 }
 
                 if (user_req.retval_addr
@@ -500,7 +480,8 @@ syscall_port_request(kobject_handler_t handler, port_request_user_t *_req)
                         CURRENT_ADDRESS_SPACE, user_req.retval_addr,
                         user_req.retval_size)) {
                         mutex_release(&CURRENT_ADDRESS_SPACE->lock);
-                        PANIC("unimplemented process kill");
+                        process_raise_exception(
+                            CURRENT_PROCESS, PROC_EXCEPTION_ACCESS_VIOLATION);
                 }
                 mutex_release(&CURRENT_ADDRESS_SPACE->lock);
 
@@ -511,7 +492,8 @@ syscall_port_request(kobject_handler_t handler, port_request_user_t *_req)
                 if (!user_memory_write(
                         CURRENT_ADDRESS_SPACE, _req, &user_req,
                         sizeof(port_request_user_t))) {
-                        PANIC("unimplemented process kill");
+                        process_raise_exception(
+                            CURRENT_PROCESS, PROC_EXCEPTION_ACCESS_VIOLATION);
                 }
 
                 mutex_release(&obj->lock);
@@ -537,8 +519,8 @@ syscall_port_request(kobject_handler_t handler, port_request_user_t *_req)
         if (!user_memory_write(
                 CURRENT_ADDRESS_SPACE, _req, &user_req,
                 sizeof(port_request_user_t))) {
-                /* TODO: kill process */
-                PANIC("unimplmeneted process kill");
+                process_raise_exception(
+                    CURRENT_PROCESS, PROC_EXCEPTION_ACCESS_VIOLATION);
         }
 
         return -error;
@@ -550,36 +532,20 @@ syscall_port_receive(
     size_t buflen)
 {
         mutex_acquire(&CURRENT_PROCESS->lock);
-        kobject_handler_t request_h;
-        kobject_t *       request_obj =
-            kobject_alloc_lock(CURRENT_PROCESS, &request_h);
-        if (!request_obj) {
-                mutex_release(&CURRENT_PROCESS->lock);
-                return -KERN_ERROR_NOMEM;
-        }
-
         kobject_t *ref_obj = kobject_lock_fetch(CURRENT_PROCESS, ref_h);
         if (!ref_obj) {
-                kobject_free_release(request_obj);
                 mutex_release(&CURRENT_PROCESS->lock);
                 return -KERN_ERROR_INVAL;
         }
-
         mutex_release(&CURRENT_PROCESS->lock);
 
         if (ref_obj->type != KOBJ_TYPE_PORT_SERVER_REF) {
-                kobject_free_release(request_obj);
                 mutex_release(&ref_obj->lock);
                 return -KERN_ERROR_INVAL;
         }
 
         port_request_t *req = port_receive(ref_obj->ptr, buf, buflen);
         ASSERT(req);
-
-        mutex_release(&ref_obj->lock);
-
-        request_obj->type = KOBJ_TYPE_PORT_REQUEST;
-        request_obj->ptr  = req;
 
         port_request_user_t user_req;
         user_req.val_small   = req->val_small;
@@ -590,39 +556,36 @@ syscall_port_receive(
         if (!user_memory_write(
                 CURRENT_ADDRESS_SPACE, _req, &user_req,
                 sizeof(port_request_user_t))) {
-                /* TODO: kill process */
-                PANIC("unimplemented kill process");
+                process_raise_exception(
+                    CURRENT_PROCESS, PROC_EXCEPTION_ACCESS_VIOLATION);
         }
 
-        mutex_release(&request_obj->lock);
-        return request_h;
+	mutex_release(&ref_obj->lock);
+
+        return KERN_OK;
 }
 
 s64
 syscall_port_response(
-    kobject_handler_t req_handler, u64 retval_small, void *retval,
+    kobject_handler_t ref_handler, u64 retval_small, void *retval,
     size_t retval_size)
 {
         mutex_acquire(&CURRENT_PROCESS->lock);
-        kobject_t *obj = kobject_lock_fetch(CURRENT_PROCESS, req_handler);
+        kobject_t *obj = kobject_lock_fetch(CURRENT_PROCESS, ref_handler);
         mutex_release(&CURRENT_PROCESS->lock);
 
-        if (obj->type != KOBJ_TYPE_PORT_REQUEST) {
+        if (!obj) { return -KERN_ERROR_INVAL; }
+
+        if (obj->type != KOBJ_TYPE_PORT_SERVER_REF) {
                 mutex_release(&obj->lock);
                 return -KERN_ERROR_INVAL;
         }
 
-        port_request_t *req = obj->ptr;
-        req->val_small      = retval_small;
+        port_server_ref_t *ref = obj->ptr;
 
         int error = KERN_OK;
-        port_response(req, retval, retval_size, &error);
-
-        if (error == KERN_OK) {
-                kobject_free_release(obj);
-                return KERN_OK;
-        }
-
+        port_response(ref, retval_small, retval, retval_size, &error);
+	mutex_release(&obj->lock);
         return -error;
 }
 

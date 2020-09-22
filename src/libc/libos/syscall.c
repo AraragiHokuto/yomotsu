@@ -86,7 +86,7 @@ syscall_port_receive(
 
 int64_t
 syscall_port_response(
-    kobject_t request, int64_t retval, void *ret_data, size_t ret_data_size)
+    kobject_t request, uint64_t retval, void *ret_data, size_t ret_data_size)
 {
         return __do_syscall(
             SYSCALL_PORT_RESPONSE, request, retval, (uintptr_t)ret_data,
