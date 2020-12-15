@@ -1,7 +1,4 @@
-.ccls*
-isodir/
+**/.ccls*
 *.iso
-**/*.o
-**/*.bin
-**/*.psfu
 build/*
+sysroot/*

@@ -1,36 +1,19 @@
-AS=x86_64-elf-as
-CC=clang
-LD=clang
+# Toplevel Makefileo
 
-all: kernel libc init
+SUBDIRS	=\
+	os
 
-kernel: build/kern/kernel.bin
-libc: build/libc/liborihime.a
-init: src/init/init
+.include "subdir.rules.make"
 
-build/kern/kernel.bin: FORCE
-	./src/kern/configure
-	make -C build/kern
-
-build/libc/liborihime.a: FORCE
-	./src/libc/configure
-	make -C build/libc
-
-src/init/init: build/libc/liborihime.a FORCE
-	make -C src/init
+orihime.iso: all
+	mkdir -p ${SYSTEM_ROOT}/boot/grub/
+	cp grub.cfg ${SYSTEM_ROOT}/boot/grub/
+	grub-mkrescue -o orihime.iso ${SYSTEM_ROOT}
 
 iso: orihime.iso
-orihime.iso: build/kern/kernel.bin src/init/init
-	mkdir -p isodir/boot/grub/
-	cp grub.cfg isodir/boot/grub/
-	cp build/kern/kernel.bin build/kern/srcmap.bin isodir/boot/
-	cp src/init/init isodir/boot/
-	grub-mkrescue -o orihime.iso isodir/
 
-runbochs: orihime.iso
+runbochs: orihime.iso .EXEC
 	bochs -q
 
-clean: FORCE
-	rm -rf build
-	make -C src/init clean
-FORCE:
+runqemu: orihime.iso .EXEC
+	qemu-system-x86_64 -cdrom orihime.iso -cpu Skylake-Client -smp 4 -m 1G
