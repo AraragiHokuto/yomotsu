@@ -1,5 +1,5 @@
-#ifndef KAGUYA_SPINLOCK_H__
-#define KAGUYA_SPINLOCK_H__
+#ifndef RENZAN_SPINLOCK_H__
+#define RENZAN_SPINLOCK_H__
 
 #include <os/kernel/atomic.h>
 #include <os/kernel/interrupt.h>
@@ -16,4 +16,4 @@ boolean spinlock_try_lock(spinlock_t *lock, irqflag_t *flag);
 void    spinlock_lock(spinlock_t *lock, irqflag_t *flag);
 void    spinlock_unlock(spinlock_t *lock, irqflag_t flag);
 
-#endif /* KAGUYA_SPINLOCK_H__ */
+#endif /* RENZAN_SPINLOCK_H__ */

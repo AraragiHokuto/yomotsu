@@ -1,5 +1,5 @@
-#ifndef ORIHIME_FUTEX_H__
-#define ORIHIME_FUTEX_H__
+#ifndef RENZAN_FUTEX_H__
+#define RENZAN_FUTEX_H__
 
 #define FUTEX_WAKE_ALL ((size_t)-1)
 
@@ -26,4 +26,4 @@ typedef uint64_t futex_val_t;
 
 #endif /* _KERNEL */
 
-#endif /* ORIHIME_FUTEX_H__ */
+#endif /* RENZAN_FUTEX_H__ */

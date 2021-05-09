@@ -1,5 +1,5 @@
-#ifndef ORIHIME_SIMD_H__
-#define ORIHIME_SIMD_H__
+#ifndef RENZAN_SIMD_H__
+#define RENZAN_SIMD_H__
 
 #ifdef _KERNEL
 
@@ -11,4 +11,4 @@ void  simd_load_state(void *state);
 
 #endif /* _KERNEL */
 
-#endif /* ORIHIME_SIMD_H__ */
+#endif /* RENZAN_SIMD_H__ */

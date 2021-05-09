@@ -1,6 +1,6 @@
 /* ctype.h -- Character handling */
-#ifndef __ORIHIME_CSTD_CTYPE_H__
-#define __ORIHIME_CSTD_CTYPE_H__
+#ifndef __RENZAN_CSTD_CTYPE_H__
+#define __RENZAN_CSTD_CTYPE_H__
 
 /* Character classification functions */
 int isalnum(int c);
@@ -20,4 +20,4 @@ int isxdigit(int c);
 int tolower(int c);
 int toupper(int c);
 
-#endif	/* __ORIHIME_CSTD_CTYPE_H__ */
+#endif	/* __RENZAN_CSTD_CTYPE_H__ */

@@ -1,8 +1,8 @@
 /* syscall.h -- thin wrapper around kernel syscalls */
-#ifndef ORIHIME_LIBOS_SYSCALL_H_
-#define ORIHIME_LIBOS_SYSCALL_H_
+#ifndef RENZAN_LIBOS_SYSCALL_H_
+#define RENZAN_LIBOS_SYSCALL_H_
 
-#ifdef __ORIHIME_OSRT
+#ifdef __RENZAN_OSRT
 
 #include <stddef.h>
 #include <stdint.h>
@@ -40,6 +40,6 @@ int64_t syscall_reincarnate(kobject_t address_space, void *entry)
 void syscall_futex_wait(void *addr, futex_val_t val);
 void syscall_futex_wake(void *addr, size_t wake_count);
 
-#endif /* __ORIHIME_OSRT */
+#endif /* __RENZAN_OSRT */
 
-#endif /* ORIHIME_LIBOS_SYSCALL_H_ */
+#endif /* RENZAN_LIBOS_SYSCALL_H_ */

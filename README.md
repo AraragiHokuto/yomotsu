@@ -1,6 +1,4 @@
-# ORIHIME - Milestone 1
-
-This is the main dev branch of milestone 1.
+# Project Renzan
 
 ## Goal
 
@@ -12,7 +10,7 @@ To be more specifically, there should be:
 
 - A Working Shell (oksh or dash)
 
-- Orihime-Specific Cross-Compiling Toolchain (binutils, gcc and/or llvm)
+- Renzan-Specific Cross-Compiling Toolchain (binutils, gcc and/or llvm)
 
 - Libc (enough to support components above)
 

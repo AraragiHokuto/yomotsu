@@ -20,7 +20,7 @@ SRCS	=\
 	osrt/syscall.s
 
 CFLAGS	+=\
-	-D__ORIHIME_OSRT	\
+	-D__RENZAN_OSRT	\
 	-nostdlibinc
 
 .include "src.rules.make"

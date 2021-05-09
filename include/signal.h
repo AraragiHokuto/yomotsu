@@ -1,6 +1,6 @@
 /* signal.h -- Signal handling */
-#ifndef __ORIHIME_CSTD_SIGNAL_H__
-#define __ORIHIME_CSTD_SIGNAL_H__
+#ifndef __RENZAN_CSTD_SIGNAL_H__
+#define __RENZAN_CSTD_SIGNAL_H__
 
 typedef volatile int sig_atomic_t;
 
@@ -30,8 +30,8 @@ enum {
 void (*signal(int sig, void (*func)(int)))(int);
 int raise(int sig);
 
-#ifdef __ORIHIME_OSRT
+#ifdef __RENZAN_OSRT
 void __signal_init(void);
-#endif /* __ORIHIME_OSRT */
+#endif /* __RENZAN_OSRT */
 
-#endif /* __ORIHIME_CSTD_SIGNAL_H__ */
+#endif /* __RENZAN_CSTD_SIGNAL_H__ */

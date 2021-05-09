@@ -1,5 +1,5 @@
-#ifndef KAGUYA_CONSOLE_H_
-#define KAGUYA_CONSOLE_H_
+#ifndef RENZAN_CONSOLE_H_
+#define RENZAN_CONSOLE_H_
 
 #include <os/kernel/types.h>
 
@@ -44,4 +44,4 @@ void kvprintf(__builtin_va_list ap, const char *mt);
 
 #endif /* _KERNEL */
 
-#endif /* KAGUYA_CONSOLE_H_ */
+#endif /* RENZAN_CONSOLE_H_ */

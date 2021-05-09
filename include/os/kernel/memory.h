@@ -1,5 +1,5 @@
-#ifndef KAGUYA_MEMORY_H_
-#define KAGUYA_MEMORY_H_
+#ifndef RENZAN_MEMORY_H_
+#define RENZAN_MEMORY_H_
 
 #ifdef _KERNEL
 
@@ -80,4 +80,4 @@ enum MMAP_ATTR { __MMAP_WRITABLE = 2, __MMAP_EXECUTABLE = 8 };
 
 #endif /* _KERNEL */
 
-#endif /* KAGUYA_MEMORY_H_ */
+#endif /* RENZAN_MEMORY_H_ */

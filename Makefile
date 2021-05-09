@@ -5,15 +5,15 @@ SUBDIRS	=\
 
 .include "subdir.rules.make"
 
-orihime.iso: all
+renzan.iso: all
 	mkdir -p ${SYSTEM_ROOT}/boot/grub/
 	cp grub.cfg ${SYSTEM_ROOT}/boot/grub/
-	grub-mkrescue -o orihime.iso ${SYSTEM_ROOT}
+	grub2-mkrescue -o renzan.iso ${SYSTEM_ROOT}
 
-iso: orihime.iso
+iso: renzan.iso
 
-runbochs: orihime.iso .EXEC
+runbochs: renzan.iso .EXEC
 	bochs -q
 
-runqemu: orihime.iso .EXEC
-	qemu-system-x86_64 -cdrom orihime.iso -cpu Skylake-Client -smp 4 -m 1G
+runqemu: renzan.iso .EXEC
+	qemu-system-x86_64 -cdrom renzan.iso -cpu Skylake-Client -smp 4 -m 1G

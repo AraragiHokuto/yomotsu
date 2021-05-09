@@ -1,6 +1,6 @@
 /* errno.h -- Errors */
-#ifndef ORIHIME_CSTD_ERRNO_H_
-#define ORIHIME_CSTD_ERRNO_H_
+#ifndef RENZAN_CSTD_ERRNO_H_
+#define RENZAN_CSTD_ERRNO_H_
 
 #include <os/kernel/error.h>
 
@@ -26,4 +26,4 @@ int *__get_errno(void);
 
 #define errno (*__get_errno())
 
-#endif /* ORIHIME_CSTD_ERRNO_H_ */
+#endif /* RENZAN_CSTD_ERRNO_H_ */

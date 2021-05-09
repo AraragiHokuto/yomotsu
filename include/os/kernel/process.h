@@ -1,5 +1,5 @@
-#ifndef ORIHIME_PROCESS_H__
-#define ORIHIME_PROCESS_H__
+#ifndef RENZAN_PROCESS_H__
+#define RENZAN_PROCESS_H__
 
 #include <os/kernel/types.h>
 
@@ -100,4 +100,4 @@ struct process_state_s {
 
 typedef struct process_state_s process_state_t;
 
-#endif /* ORIHIME_PROCESS_H__ */
+#endif /* RENZAN_PROCESS_H__ */

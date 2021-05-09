@@ -1,5 +1,5 @@
-#ifndef KAGUYA_SCHED_H__
-#define KAGUYA_SCHED_H__
+#ifndef RENZAN_SCHED_H__
+#define RENZAN_SCHED_H__
 
 #include <os/kernel/boolean.h>
 #include <os/kernel/list.h>
@@ -46,4 +46,4 @@ void sched_enable(void);
 
 #endif /* _KERNEL */
 
-#endif /* KAGUYA_SCHED_H__ */
+#endif /* RENZAN_SCHED_H__ */

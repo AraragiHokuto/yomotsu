@@ -1,5 +1,5 @@
-#ifndef KAGUYA_ASM_H__
-#define KAGUYA_ASM_H__
+#ifndef RENZAN_ASM_H__
+#define RENZAN_ASM_H__
 
 #include <os/kernel/types.h>
 
@@ -44,4 +44,4 @@ cpuid(u32 page, u32 *a, u32 *b, u32 *c, u32 *d)
 
 #endif /* _KERNEL */
 
-#endif /* KAGUYA_ASM_H__ */
+#endif /* RENZAN_ASM_H__ */

@@ -1,5 +1,5 @@
-#ifndef KAGUYA_USER_MEMORY_H__
-#define KAGUYA_USER_MEMORY_H__
+#ifndef RENZAN_USER_MEMORY_H__
+#define RENZAN_USER_MEMORY_H__
 
 #include <os/kernel/memory.h>
 #include <os/kernel/types.h>
@@ -22,4 +22,4 @@ sint user_memory_copy(
     address_space_t *dst_as, void *dst_vaddr, address_space_t *src_as,
     void *src_vaddr, size_t size);
 
-#endif /* KAGUYA_USER_MEMORY_H__ */
+#endif /* RENZAN_USER_MEMORY_H__ */

@@ -1,6 +1,6 @@
 /* stdlib.h -- General utilities */
-#ifndef __ORIHIME_CSTD_STDLIB_H__
-#define __ORIHIME_CSTD_STDLIB_H__
+#ifndef __RENZAN_CSTD_STDLIB_H__
+#define __RENZAN_CSTD_STDLIB_H__
 
 #define __need_NULL
 #define __need_size_t
@@ -92,4 +92,4 @@ lldiv_t lldiv(long long int numer, long long int denom);
 /* Multibyte/wide string conversion functions */
 /* TODO: want locale */
 
-#endif /* __ORIHIME_CSTD_STDLIB_H__ */
+#endif /* __RENZAN_CSTD_STDLIB_H__ */

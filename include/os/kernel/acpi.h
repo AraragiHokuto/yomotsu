@@ -1,5 +1,5 @@
-#ifndef KAGUYA_ACPI_H_
-#define KAGUYA_ACPI_H_
+#ifndef RENZAN_ACPI_H_
+#define RENZAN_ACPI_H_
 
 #include <os/kernel/cdefs.h>
 #include <os/kernel/types.h>
@@ -106,4 +106,4 @@ acpi_madt_record_t *acpi_madt_next_record(acpi_madt_record_t *this);
 
 #endif /* _KERNEL */
 
-#endif /* KAGUYA_ACPI_H_ */
+#endif /* RENZAN_ACPI_H_ */

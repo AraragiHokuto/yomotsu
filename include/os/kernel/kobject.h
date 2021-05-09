@@ -1,5 +1,5 @@
-#ifndef KAGUYA_KOBJECT_H__
-#define KAGUYA_KOBJECT_H__
+#ifndef RENZAN_KOBJECT_H__
+#define RENZAN_KOBJECT_H__
 
 #ifdef _KERNEL
 
@@ -39,4 +39,4 @@ typedef int64_t kobject_t;
 
 #endif /* _KERNEL */
 
-#endif /* KAGUYA_KOBJECT_H__ */
+#endif /* RENZAN_KOBJECT_H__ */

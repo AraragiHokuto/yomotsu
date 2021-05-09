@@ -22,7 +22,7 @@ export BUILD_ARCH=amd64
 
 ## Toolchain definitions
 ### LLVM root
-export LLVM_ROOT=`realpath ${REPO_ROOT}/../llvm-orihime-root`
+export LLVM_ROOT=`realpath ${REPO_ROOT}/../llvm-renzan-root`
 
 ### C Compiler
 export CC=${LLVM_ROOT}/bin/clang
@@ -37,6 +37,12 @@ export LD=${LLVM_ROOT}/bin/ld.lld
 # --- Internal definitions ---
 # Do not touch those unless you know what you are doing
 #
+
+## Build Timestamp
+export __BUILD_TIMESTAMP=$(date '+%Y%m%d%H%M')
+
+## Commit hash
+export __COMMIT=$(git rev-parse --short HEAD)
 
 case $BUILD_ARCH in
     amd64)
@@ -60,7 +66,9 @@ ${CFLAGS} \
 -Wno-unused-function \
 -Wno-sign-compare \
 -I${REPO_ROOT}/include \
---target=${TRIPLE_ARCH}-pc-orihime-elf \
+-D__OSC_BUILD_TS='${__BUILD_TIMESTAMP}' \
+-D__OSC_BUILD_CI='${__COMMIT}' \
+--target=${TRIPLE_ARCH}-pc-renzan-elf \
 --sysroot=${SYSTEM_ROOT}"
 
 # Add makefile rules inclusion
@@ -73,7 +81,7 @@ export MAKEFLAGS=-I${REPO_ROOT}/makerules
 echo "Project root:\t${REPO_ROOT}"
 echo "Output sysroot:\t${SYSTEM_ROOT}"
 echo "Build type:\t${BUILD_TYPE}"
-echo "Target triple:\t${TRIPLE_ARCH}-pc-orihime-elf"
+echo "Target triple:\t${TRIPLE_ARCH}-pc-renzan-elf"
 echo "C Compiler:\t${CC}"
 echo "Assembler:\t${AS}"
 echo "Linker:\t\t${LD}"

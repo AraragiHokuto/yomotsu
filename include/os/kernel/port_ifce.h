@@ -1,6 +1,6 @@
 /* port_ifce.h -- port-like interface for various kernel functions */
-#ifndef KAGUYA_PORT_IFCE_H__
-#define KAGUYA_PORT_IFCE_H__
+#ifndef RENZAN_PORT_IFCE_H__
+#define RENZAN_PORT_IFCE_H__
 
 #include <os/kernel/boolean.h>
 #include <os/kernel/process.h>
@@ -27,4 +27,4 @@ port_ifce_t *port_ifce_lookup(const char *name);
 
 #endif /* _KERNEL */
 
-#endif /* KAGUYA_PORT_IFCE_H__ */
+#endif /* RENZAN_PORT_IFCE_H__ */

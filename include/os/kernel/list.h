@@ -1,5 +1,5 @@
-#ifndef KAGUYA_LIST_H__
-#define KAGUYA_LIST_H__
+#ifndef RENZAN_LIST_H__
+#define RENZAN_LIST_H__
 
 #include <os/kernel/boolean.h>
 #include <os/kernel/types.h>
@@ -60,4 +60,4 @@ list_is_empty(list_node_t *head)
 
 #endif /* _KERNEL */
 
-#endif /* KAGUYA_LIST_H__ */
+#endif /* RENZAN_LIST_H__ */

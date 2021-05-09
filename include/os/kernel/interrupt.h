@@ -1,5 +1,5 @@
-#ifndef KAGUYA_INTERRUPT_H_
-#define KAGUYA_INTERRUPT_H_
+#ifndef RENZAN_INTERRUPT_H_
+#define RENZAN_INTERRUPT_H_
 
 #include <os/kernel/boolean.h>
 #include <os/kernel/types.h>
@@ -72,4 +72,4 @@ void apic_write_reg(uintptr offset, u32 value);
 
 #endif /* _KERNEL */
 
-#endif /* KAGUYA_INTERRUPT_H_ */
+#endif /* RENZAN_INTERRUPT_H_ */

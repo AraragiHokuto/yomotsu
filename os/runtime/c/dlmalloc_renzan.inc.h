@@ -1,4 +1,4 @@
-/* dlmalloc_orihime.inc.h -- ORIHIME specific definitions */
+/* dlmalloc_renzan.inc.h -- Renzan dlmalloc configuration */
 
 #define MSPACES       1
 #define HAVE_MORECORE 0

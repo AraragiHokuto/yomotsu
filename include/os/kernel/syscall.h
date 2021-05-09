@@ -1,5 +1,5 @@
-#ifndef ORIHIME_SYSCALL_H__
-#define ORIHIME_SYSCALL_H__
+#ifndef RENZAN_SYSCALL_H__
+#define RENZAN_SYSCALL_H__
 
 enum SYSCALLS {
         SYSCALL_AS_CREATE = 0,
@@ -34,4 +34,4 @@ void syscall_init(void);
 
 #endif /* _KERNEL */
 
-#endif /* ORIHIME_SYSCALL_H__ */
+#endif /* RENZAN_SYSCALL_H__ */

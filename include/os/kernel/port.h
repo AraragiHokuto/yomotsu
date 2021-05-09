@@ -1,5 +1,5 @@
-#ifndef KAGUYA_PORT_H__
-#define KAGUYA_PORT_H__
+#ifndef RENZAN_PORT_H__
+#define RENZAN_PORT_H__
 
 #include <os/kernel/boolean.h>
 #include <os/kernel/process.h>
@@ -105,4 +105,4 @@ struct __port_request_s {
         size_t retval_size;
 };
 
-#endif /* KAGUYA_PORT_H__ */
+#endif /* RENZAN_PORT_H__ */

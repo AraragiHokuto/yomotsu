@@ -1,5 +1,5 @@
-#ifndef KAGUYA_TIMER_H_
-#define KAGUYA_TIMER_H_
+#ifndef RENZAN_TIMER_H_
+#define RENZAN_TIMER_H_
 
 #include <os/kernel/types.h>
 
@@ -25,4 +25,4 @@ void timer_set_timeout(
     timer_uduration_t timeout, timer_callback_t callback, void *data);
 u64 timer_get_timestamp(void);
 
-#endif /* KAGUYA_TIMER_H_ */
+#endif /* RENZAN_TIMER_H_ */

@@ -1,6 +1,6 @@
 /* string.h -- String handling */
-#ifndef ORIHIME_CSTD_STRING_H_
-#define ORIHIME_CSTD_STRING_H_
+#ifndef RENZAN_CSTD_STRING_H_
+#define RENZAN_CSTD_STRING_H_
 
 #define __need_size_t
 #include <stddef.h>
@@ -37,4 +37,4 @@ void *memset(void *s, int c, size_t n);
 char *strerror(int errnum);
 size_t strlen(const char *s);
 
-#endif /* ORIHIME_CSTD_STRING_H_ */
+#endif /* RENZAN_CSTD_STRING_H_ */

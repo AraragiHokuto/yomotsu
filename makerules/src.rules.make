@@ -18,11 +18,11 @@ __makedirs: .EXEC
 	@mkdir -p ${OBJS:H:O:u:@DIR@${OBJ_PATH}/${DIR}@}
 
 .c.c.o: __makedirs
-	@echo "\tCC\t$@"
+	@echo -e "\tCC\t$@"
 	@$(CC) $(CFLAGS) -c -o$@ $< -MMD -MT$@
 
 .s.s.o: __makedirs
-	@echo "\tAS\t$@"
+	@echo -e "\tAS\t$@"
 	@$(AS) $(ASFLAGS) -c -o$@ $<
 
 OBJS	+=\

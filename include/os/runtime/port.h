@@ -1,6 +1,6 @@
 /* port.h -- port system wrapping */
-#ifndef __ORIHIME_LIBOS_PORT_H__
-#define __ORIHIME_LIBOS_PORT_H__
+#ifndef __RENZAN_LIBOS_PORT_H__
+#define __RENZAN_LIBOS_PORT_H__
 
 #include <os/kernel/kobject.h>
 #include <os/kernel/port.h>
@@ -16,4 +16,4 @@ int    port_receive(
 int port_response(
     kobject_t request, uint64_t retval, void *ret_data, size_t ret_data_size);
 
-#endif /* __ORIHIME_LIBOS_PORT_H__ */
+#endif /* __RENZAN_LIBOS_PORT_H__ */

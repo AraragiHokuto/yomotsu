@@ -1,5 +1,5 @@
-#ifndef KAGUYA_CDEFS_H_
-#define KAGUYA_CDEFS_H_
+#ifndef RENZAN_CDEFS_H_
+#define RENZAN_CDEFS_H_
 
 #include <os/kernel/types.h>
 
@@ -42,4 +42,4 @@ void __panic(const char *func, uint line, const char *fmt, ...) NORETURN;
 
 #endif /* _KERNEL */
 
-#endif /* KAGUYA_CDEFS_H_ */
+#endif /* RENZAN_CDEFS_H_ */

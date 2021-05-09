@@ -1,6 +1,6 @@
 /* stdio.h -- Input/Output */
-#ifndef __ORIHIME_CSTD_STDIO_H__
-#define __ORIHIME_CSTD_STDIO_H__
+#ifndef __RENZAN_CSTD_STDIO_H__
+#define __RENZAN_CSTD_STDIO_H__
 
 #define __need_NULL
 #define __need_size_t
@@ -8,7 +8,7 @@
 
 typedef struct __file_impl_s FILE;
 
-#ifdef __ORIHIME_OSRT
+#ifdef __RENZAN_OSRT
 
 typedef unsigned long __off_t;
 
@@ -23,7 +23,7 @@ struct __file_impl_s {
         void *data;
 };
 
-#endif /* __ORIHIME_OSRT */
+#endif /* __RENZAN_OSRT */
 
 typedef unsigned long fpos_t;
 
@@ -99,4 +99,4 @@ int vsprintf(char *restrict s, const char *restrict format, va_list arg);
 /* Error-handling functions */
 void perror(const char *s);
 
-#endif /* __ORIHIME_CSTD_STDIO_H__ */
+#endif /* __RENZAN_CSTD_STDIO_H__ */

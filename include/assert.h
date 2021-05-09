@@ -1,5 +1,5 @@
-#ifndef __ORIHIME_CSTD_ASSERT_H__
-#define __ORIHIME_CSTD_ASSERT_H__
+#ifndef __RENZAN_CSTD_ASSERT_H__
+#define __RENZAN_CSTD_ASSERT_H__
 
 #define static_assert _Static_assert
 
@@ -11,4 +11,4 @@ void __assert(
 #define assert(expr) __assert((expr), #expr, __FILE__, __LINE__, __func__);
 #endif
 
-#endif /* __ORIHIME_CSTD_ASSERT_H__ */
+#endif /* __RENZAN_CSTD_ASSERT_H__ */

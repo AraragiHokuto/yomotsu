@@ -1,5 +1,5 @@
-#ifndef ORIHIME_PERCPU_H_
-#define ORIHIME_PERCPU_H_
+#ifndef RENZAN_PERCPU_H_
+#define RENZAN_PERCPU_H_
 
 #include <os/kernel/boolean.h>
 #include <os/kernel/descriptor.h>
@@ -36,4 +36,4 @@ typedef struct percpu_data_s {
 void           percpu_init(void);
 percpu_data_t *percpu(void);
 
-#endif /* ORIHIME_PERCPU_H_ */
+#endif /* RENZAN_PERCPU_H_ */

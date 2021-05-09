@@ -1,5 +1,5 @@
-#ifndef KAGUYA_TYPES_H_
-#define KAGUYA_TYPES_H_
+#ifndef RENZAN_TYPES_H_
+#define RENZAN_TYPES_H_
 
 #ifdef _KERNEL
 
@@ -71,4 +71,4 @@ typedef __u8 __byte;
 
 #endif /* _KERNEL */
 
-#endif /* KAGUYA_TYPES_H_ */
+#endif /* RENZAN_TYPES_H_ */

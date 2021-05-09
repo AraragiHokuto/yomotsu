@@ -1,5 +1,5 @@
-#ifndef KAGUYA_SMP_H_
-#define KAGUYA_SMP_H_
+#ifndef RENZAN_SMP_H_
+#define RENZAN_SMP_H_
 
 #include <os/kernel/percpu.h>
 #include <os/kernel/types.h>
@@ -17,4 +17,4 @@ void   smp_start_all_aps(void);
 cpu_t *smp_get_cpu(size_t id);
 uint   smp_cpu_count(void);
 
-#endif /* KAGUYA_SMP_H_ */
+#endif /* RENZAN_SMP_H_ */

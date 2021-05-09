@@ -1,13 +1,7 @@
 /* error.h -- kernel error code definitinons */
 
-/*
- * This file is part of Orihime internal implementation.
- * Any interface may change without priority notification,
- * nor will 
- */
-
-#ifndef __KAGUYA_ERROR_H__
-#define __KAGUYA_ERROR_H__
+#ifndef __RENZAN_ERROR_H__
+#define __RENZAN_ERROR_H__
 
 enum KERN_ERRCODE {
         KERN_OK          = 0,
@@ -27,4 +21,4 @@ enum KERN_ERRCODE {
         KERN_ERROR_END = 0x1000
 };
 
-#endif /* __KAGUYA_ERROR_H__ */
+#endif /* __RENZAN_ERROR_H__ */

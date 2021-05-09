@@ -1,5 +1,5 @@
-#ifndef KAGUYA_ATOMIC_H_
-#define KAGUYA_ATOMIC_H_
+#ifndef RENZAN_ATOMIC_H_
+#define RENZAN_ATOMIC_H_
 
 #include <os/kernel/boolean.h>
 #include <os/kernel/types.h>
@@ -170,4 +170,4 @@ typedef void *atomic_ptr;
 
 #endif /* _KERNEL */
 
-#endif /* KAGUYA_ATOMIC_H_ */
+#endif /* RENZAN_ATOMIC_H_ */

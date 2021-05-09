@@ -1,5 +1,5 @@
-#ifndef KAGUYA_DESCRIPTOR_H__
-#define KAGUYA_DESCRIPTOR_H__
+#ifndef RENZAN_DESCRIPTOR_H__
+#define RENZAN_DESCRIPTOR_H__
 
 #include <os/kernel/cdefs.h>
 #include <os/kernel/types.h>
@@ -72,4 +72,4 @@ void descriptor_load_tss(tss_t *tss);
 
 #endif /* _KERNEL */
 
-#endif /* ORIHIME_DESCRIPTOR_H__ */
+#endif /* RENZAN_DESCRIPTOR_H__ */

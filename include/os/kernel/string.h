@@ -1,5 +1,5 @@
-#ifndef KAGUYA_STRING_H_
-#define KAGUYA_STRING_H_
+#ifndef RENZAN_STRING_H_
+#define RENZAN_STRING_H_
 
 #include <os/kernel/boolean.h>
 #include <os/kernel/types.h>
@@ -17,4 +17,4 @@ void kmemcpy(void *dst, const void *src, size_t size);
 void kmemmov(void *dst, const void *src, size_t size);
 void kmemset(void *dst, byte c, size_t size);
 
-#endif /* KAGUYA_STRING_H_ */
+#endif /* RENZAN_STRING_H_ */

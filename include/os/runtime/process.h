@@ -1,6 +1,6 @@
 /* process.h -- Process control */
-#ifndef __ORIHIME_LIBOS_PROCESS_H__
-#define __ORIHIME_LIBOS_PROCESS_H__
+#ifndef __RENZAN_LIBOS_PROCESS_H__
+#define __RENZAN_LIBOS_PROCESS_H__
 
 #include <os/kernel/process.h>
 #include <stdint.h>
@@ -12,7 +12,7 @@ bool  process_wait(pid_t pid, int64_t *ret);
 // pid_t process_spawn_from_memory(void *executable)
 _Noreturn void process_exit(int64_t retval);
 
-#ifdef __ORIHIME_OSRT
+#ifdef __RENZAN_OSRT
 
 #include <os/kernel/memory.h>
 
@@ -40,5 +40,5 @@ typedef struct __libos_process_init_data_s __libos_process_init_data_t;
 		(uint8_t *)page + __PAGE_SIZE				\
 		- sizeof(__libos_process_init_data_t)))
 
-#endif /* __ORIHIME_OSRT */
-#endif /* __ORIHIME_LIBOS_PROCESS_H__ */
+#endif /* __RENZAN_OSRT */
+#endif /* __RENZAN_LIBOS_PROCESS_H__ */

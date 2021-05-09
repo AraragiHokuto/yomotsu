@@ -530,9 +530,9 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 #define DLMALLOC_EXPORT extern
 #endif
 
-#ifdef __ORIHIME
-#include "dlmalloc_orihime.inc.h"
-#endif	/* __ORIHIME */
+#ifdef __renzan
+#include "dlmalloc_renzan.inc.h"
+#endif	/* __renzan */
 
 #ifndef WIN32
 #ifdef _WIN32

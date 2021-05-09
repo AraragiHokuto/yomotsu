@@ -1,5 +1,5 @@
-#ifndef ORIHIME_MUTEX_H__
-#define ORIHIME_MUTEX_H__
+#ifndef RENZAN_MUTEX_H__
+#define RENZAN_MUTEX_H__
 
 #include <os/kernel/atomic.h>
 #include <os/kernel/types.h>
@@ -21,4 +21,4 @@ void    mutex_release_dual(mutex_t *m1, mutex_t *m2);
 
 #endif /* _KERNEL */
 
-#endif /* ORIHIME_MUTEX_H__ */
+#endif /* RENZAN_MUTEX_H__ */

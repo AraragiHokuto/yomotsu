@@ -1,5 +1,5 @@
-#ifndef KAGUYA_BOOLEAN_H_
-#define KAGUYA_BOOLEAN_H_
+#ifndef RENZAN_BOOLEAN_H_
+#define RENZAN_BOOLEAN_H_
 
 #include <os/kernel/types.h>
 
@@ -16,4 +16,4 @@ typedef __boolean boolean;
 
 #endif /* _KERNEL */
 
-#endif /* KAGUYA_BOOLEAN_H_ */
+#endif /* RENZAN_BOOLEAN_H_ */

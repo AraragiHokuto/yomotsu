@@ -15,10 +15,14 @@
 
 void init_start(process_t *self);
 
+#define STR(x) _STR(x)
+#define _STR(x) #x
+
 void
 kmain_bsp(u64 rsdp, u64 xsdp)
 {
-        kprintf("Kaguya -- Non-Unix Microkernel\n");
+        kprintf("Renzan Igniter\n");
+	kprintf("rev. " STR(__OSC_BUILD_CI) " build " STR(__OSC_BUILD_TS) "\n");
         kprintf("Initializing MM\n");
         vm_init();
         kprintf("Initializing Kernel Heap\n");
