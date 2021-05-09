@@ -1,10 +1,11 @@
 #include <os/kernel/console.h>
 #include <os/kernel/cdefs.h>
 #include <os/kernel/memory.h>
-#include <os/kernel/percpu.h>
 #include <os/kernel/process.h>
 #include <os/kernel/string.h>
 #include <os/kernel/types.h>
+
+#include <hal_percpu.h>
 
 #define ELF_MAGIC 0x464c457f
 

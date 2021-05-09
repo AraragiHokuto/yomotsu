@@ -1,11 +1,11 @@
+#include <hal_percpu.h>
+#include <os/kernel/cdefs.h>
 #include <os/kernel/console.h>
 #include <os/kernel/error.h>
 #include <os/kernel/futex.h>
 #include <os/kernel/list.h>
-#include <os/kernel/cdefs.h>
 #include <os/kernel/memory.h>
 #include <os/kernel/mutex.h>
-#include <os/kernel/percpu.h>
 #include <os/kernel/port.h>
 #include <os/kernel/string.h>
 #include <os/kernel/timer.h>

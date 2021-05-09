@@ -1,11 +1,11 @@
+#include <hal_percpu.h>
 #include <os/kernel/asm.h>
+#include <os/kernel/cdefs.h>
 #include <os/kernel/console.h>
 #include <os/kernel/error.h>
 #include <os/kernel/kobject.h>
-#include <os/kernel/cdefs.h>
 #include <os/kernel/memory.h>
 #include <os/kernel/mutex.h>
-#include <os/kernel/percpu.h>
 #include <os/kernel/process.h>
 #include <os/kernel/simd.h>
 #include <os/kernel/string.h>
@@ -244,8 +244,8 @@ process_create(process_t *parent)
 
         mutex_init(&ret->lock);
 
-        ret->pid          = pid;
-        ret->retval       = 0;
+        ret->pid    = pid;
+        ret->retval = 0;
 
         ret->terminate_flag = B_FALSE;
 
@@ -255,7 +255,7 @@ process_create(process_t *parent)
 
         ret->kernel_stack = kernel_rsp;
 
-	ret->address_space = NULL;
+        ret->address_space = NULL;
 
         list_head_init(&ret->sibling_list_node);
         list_head_init(&ret->child_list_head);
@@ -284,7 +284,7 @@ process_destroy(process_t *process)
                 vm_address_space_destroy(process->address_space);
         }
 
-        kmem_free((byte*)process->kernel_stack - KERNEL_STACK_SIZE + 8);
+        kmem_free((byte *)process->kernel_stack - KERNEL_STACK_SIZE + 8);
         simd_free_state_area(process->cpu_state.simd_state);
 
         free_pid(process->pid);
@@ -301,9 +301,9 @@ process_terminate(process_t *process)
 void
 process_raise_exception(process_t *process, int exception)
 {
-	/* stub */
-	kprintf("Process killed due to exception: %d\n", exception);
-	process_terminate(process);
+        /* stub */
+        kprintf("Process killed due to exception: %d\n", exception);
+        process_terminate(process);
 }
 
 static void
@@ -313,7 +313,7 @@ __process_on_terminate(void)
                 PANIC("process with NULL parent terminated");
         }
 
-	sched_disable();
+        sched_disable();
 
         mutex_acquire(&CURRENT_PROCESS->lock);
         kobject_cleanup(CURRENT_PROCESS);
@@ -341,7 +341,7 @@ __process_on_terminate(void)
         mutex_release(&CURRENT_PROCESS->lock);
 
         sched_leave(CURRENT_PROCESS);
-	sched_enable();
+        sched_enable();
         sched_resched();
 
         PANIC("PROCESS_ON_TERMINATE reached end");

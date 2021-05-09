@@ -1,11 +1,13 @@
 .set	VADDR_BASE,	0xFFFFFFFF80000000
 
 .section	.text
-.global	_ap_trampoline
-.global	_ap_start
+.global	ig_ap_trampoline
+.global	ig_ap_start
 .code16
 
-_ap_trampoline:
+# 16bit AP start-up trampoline code
+# This will be triggered by SIPI
+ig_ap_trampoline:
 	xorw	%ax, %ax
 	movw	%ax, %ds
 	movw	%ax, %es
@@ -18,21 +20,22 @@ _ap_trampoline:
 	movl	%eax, %cr0
 
 	# go to ap startup code
-	movl	$_ap_start - VADDR_BASE, %eax
-	ljmp	$0x08, $(_ap_trampoline32 - _ap_trampoline + 0x7000)
+	movl	$ig_ap_start - VADDR_BASE, %eax
+	ljmp	$0x08, $(ig_ap_trampoline32 - ig_ap_trampoline + 0x7000)
 
+# 32bit AP start-up trampoline code
 .code32
-_ap_trampoline32:
-	movl	$(_ap_start - VADDR_BASE), %eax
+ig_ap_trampoline32:
+	movl	$(ig_ap_start - VADDR_BASE), %eax
 	jmp	*%eax
 
 .code32
-_ap_start:
+ig_ap_start:
 	movw	$0x10, %ax
 	movw	%ax, %ds
 
 	# load pml4 into cr3
-	movl	$_pml4 - VADDR_BASE, %eax
+	movl	$ig_pml4 - VADDR_BASE, %eax
 	movl	%eax, %cr3
 
 	# enable PAE
@@ -53,15 +56,15 @@ _ap_start:
 
 	popl	%edi
 
-	lgdt	_gdt64_ptr32 - VADDR_BASE
+	lgdt	ig_gdt64_ptr32 - VADDR_BASE
 
 	# go long mode
-	jmp	$0x08, $_ap_lm_entry
+	jmp	$0x08, $ig_ap_lm_entry
 
 .code64
-_ap_lm_entry	= . - VADDR_BASE
+ig_ap_lm_entry	= . - VADDR_BASE
 	# load gdt in higher half
-	lgdt	_gdt64_ptr
+	lgdt	ig_gdt64_ptr
 
 	# load 64-bit data segments
 	movw	$0x10, %ax
@@ -75,20 +78,20 @@ _ap_lm_entry	= . - VADDR_BASE
 	movq	%rax, %ss
 
 	# setup c stack
-	movq	__ap_stack, %rsp
+	movq	ig_ap_stack, %rsp
 	addq	$16384, %rsp
 	xorq	%rbp, %rbp
 	pushq	%rbp
 	movq	%rsp, %rbp
 
 	# go higher half
-	movabs	$_ap_higher_half_entry, %rax
+	movabs	$ig_ap_higher_half_entry, %rax
 	jmp	*%rax
 
-_ap_higher_half_entry:
+ig_ap_higher_half_entry:
 	xorq	%rbp, %rbp
 	pushq	%rbp
-	call	smp_ap_entry
+	call	ig_smp_ap_entry
 _1:
 	hlt
 	jmp _1

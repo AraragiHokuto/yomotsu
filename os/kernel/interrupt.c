@@ -5,9 +5,10 @@
 #include <os/kernel/interrupt.h>
 #include <os/kernel/cdefs.h>
 #include <os/kernel/memory.h>
-#include <os/kernel/percpu.h>
 #include <os/kernel/string.h>
 #include <os/kernel/types.h>
+
+#include <hal_percpu.h>
 
 typedef struct idt_gate_s {
         u16 off_low;

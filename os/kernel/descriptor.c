@@ -1,7 +1,8 @@
 #include <os/kernel/descriptor.h>
 #include <os/kernel/memory.h>
-#include <os/kernel/percpu.h>
 #include <os/kernel/string.h>
+
+#include <hal_percpu.h>
 
 void
 descriptor_init(void)

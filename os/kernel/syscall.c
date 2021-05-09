@@ -4,12 +4,13 @@
 #include <os/kernel/futex.h>
 #include <os/kernel/cdefs.h>
 #include <os/kernel/memory.h>
-#include <os/kernel/percpu.h>
 #include <os/kernel/port.h>
 #include <os/kernel/port_ifce.h>
 #include <os/kernel/string.h>
 #include <os/kernel/syscall.h>
 #include <os/kernel/user_memory.h>
+
+#include <hal_percpu.h>
 
 s64
 syscall_as_create(void)

@@ -3,8 +3,9 @@
 #include <os/kernel/cdefs.h>
 #include <os/kernel/memory.h>
 #include <os/kernel/mutex.h>
-#include <os/kernel/percpu.h>
 #include <os/kernel/string.h>
+
+#include <hal_percpu.h>
 
 #define ALIGNDOWN(x, r) ((x) & ~((r)-1))
 #define ALIGNUP(x, r)   (ALIGNDOWN((x)-1, r) + (r))

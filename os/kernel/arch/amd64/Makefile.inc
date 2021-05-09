@@ -2,20 +2,19 @@
 
 # AMD64 arch-specific definitions
 
-ARCH_SRCS	=\
-	boot/mboot2.s	\
-	boot/mboot2.c
+SRCS.amd64	=\
+	arch/amd64/ig_mboot2.s	\
+	arch/amd64/ig_mboot2.c	\
+	arch/amd64/ig_smp.s	\
+	arch/amd64/ig_smp.c	\
+	arch/amd64/hal_smp.c
 
-ARCH_CFLAGS	=\
+CFLAGS.amd64	=\
 	-mcmodel=kernel	\
 	-fno-pie	\
 	-mno-implicit-float	\
 	-mno-red-zone
 
-ARCH_MAKEDIRS	=\
-	boot
-
-LINKER_SCRIPT	:= ${.PARSEDIR}/linker.ld
-ARCH_LDFLAGS	=\
+LDFLAGS.amd64	=\
 	-zmax-page-size=0x1000	\
-	-T${REPO_ROOT}/os/kernel/arch/amd64/linker.ld
+	-T${SRCROOT}/arch/amd64/linker.ld

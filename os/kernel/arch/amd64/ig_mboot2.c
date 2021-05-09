@@ -89,7 +89,7 @@ extern void _pma_mark_usable(uintptr base, size_t size);
 extern void _pma_mark_reserved(uintptr base, size_t size);
 
 static void
-mb2_load_module(byte *p)
+ig_mb2_load_module(byte *p)
 {
         kprintf("loading module\n");
         mb2_info_module_t *mp = (void *)p;
@@ -108,7 +108,7 @@ mb2_load_module(byte *p)
 }
 
 static void
-mb2_load_mem_map(byte *p)
+ig_mb2_load_mem_map(byte *p)
 {
         kprintf("loading memory map\n");
         mb2_info_mem_map_t *mmp = (mb2_info_mem_map_t *)p;
@@ -141,7 +141,7 @@ mb2_load_mem_map(byte *p)
 }
 
 static u64
-mb2_load_rsdp(byte *p)
+ig_mb2_load_rsdp(byte *p)
 {
         kprintf("loading RSDP\n");
 
@@ -162,7 +162,7 @@ mb2_load_rsdp(byte *p)
 }
 
 static u64
-mb2_load_rsdp2(byte *p)
+ig_mb2_load_rsdp2(byte *p)
 {
         kprintf("loading XSDP\n");
 
@@ -194,10 +194,10 @@ __align8(byte *p)
         return (byte *)ret;
 }
 
-extern void kmain_bsp(u64 rsdt_addr, u64 xsdt_addr);
+extern void ig_entry_bsp(u64 rsdt_addr, u64 xsdt_addr);
 
 void
-mb2_kmain(mb2_info_header_t *mb2_info_header)
+ig_mb2_c_entry(mb2_info_header_t *mb2_info_header)
 {
         con_init();
         con_set_driver(vga_text_init());
@@ -238,10 +238,10 @@ mb2_kmain(mb2_info_header_t *mb2_info_header)
                         memmap = p;
                         break;
                 case MB2_INFO_ACPI_RSDP1:
-                        rsdt_addr = mb2_load_rsdp(p);
+                        rsdt_addr = ig_mb2_load_rsdp(p);
                         break;
                 case MB2_INFO_ACPI_RSDP2:
-                        xsdt_addr = mb2_load_rsdp2(p);
+                        xsdt_addr = ig_mb2_load_rsdp2(p);
                         break;
                 default:
                         break;
@@ -252,8 +252,8 @@ mb2_kmain(mb2_info_header_t *mb2_info_header)
 
         VERIFY(memmap, "multiboot2: no memory map found!");
 
-        mb2_load_mem_map(memmap);
-        for (byte **i = module; i < module_end; ++i) { mb2_load_module(*i); }
+        ig_mb2_load_mem_map(memmap);
+        for (byte **i = module; i < module_end; ++i) { ig_mb2_load_module(*i); }
 
-        kmain_bsp(rsdt_addr, xsdt_addr);
+        ig_entry_bsp(rsdt_addr, xsdt_addr);
 }

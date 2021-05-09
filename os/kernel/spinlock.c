@@ -1,5 +1,5 @@
+#include <hal_smp.h>
 #include <os/kernel/cdefs.h>
-#include <os/kernel/smp.h>
 #include <os/kernel/spinlock.h>
 #include <os/kernel/string.h>
 

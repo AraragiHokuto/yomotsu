@@ -1,6 +1,6 @@
-#include <os/kernel/console.h>
+#include <hal_percpu.h>
 #include <os/kernel/cdefs.h>
-#include <os/kernel/percpu.h>
+#include <os/kernel/console.h>
 
 struct stackframe_s {
         struct stackframe_s *rbp;

@@ -1,7 +1,8 @@
 #include <os/kernel/interrupt.h>
 #include <os/kernel/cdefs.h>
 #include <os/kernel/mutex.h>
-#include <os/kernel/percpu.h>
+
+#include <hal_percpu.h>
 
 /* stub content for owner field */
 #define STUB_THREAD ((void *)0xffef000000000000)

@@ -1,6 +1,7 @@
+#include <hal_percpu.h>
+#include <hal_smp.h>
 #include <os/kernel/futex.h>
 #include <os/kernel/list.h>
-#include <os/kernel/smp.h>
 #include <os/kernel/spinlock.h>
 #include <os/kernel/user_memory.h>
 
@@ -14,7 +15,7 @@ typedef struct futex_bucket_s futex_bucket_t;
 
 struct futex_entry_s {
         uintptr     addr;
-        process_t *  proc;
+        process_t * proc;
         list_node_t node;
 };
 
@@ -80,7 +81,7 @@ futex_wait(address_space_t *as, void *addr, futex_val_t val)
 
         if (atomic_load_u64(*p, __ATOMIC_SEQ_CST) == val) {
                 futex_entry_t entry;
-                entry.addr   = paddr;
+                entry.addr = paddr;
                 entry.proc = CURRENT_PROCESS;
                 list_insert(&entry.node, &bucket->head);
 
@@ -114,7 +115,7 @@ futex_kwait(futex_val_t *addr, futex_val_t val)
 
         if (atomic_load_u64(*addr, __ATOMIC_SEQ_CST) == val) {
                 futex_entry_t entry;
-                entry.addr   = (uintptr)addr;
+                entry.addr = (uintptr)addr;
                 entry.proc = CURRENT_PROCESS;
                 list_insert(&entry.node, &bucket->head);
 

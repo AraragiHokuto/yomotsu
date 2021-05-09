@@ -4,9 +4,10 @@
 #include <os/kernel/interrupt.h>
 #include <os/kernel/cdefs.h>
 #include <os/kernel/memory.h>
-#include <os/kernel/percpu.h>
 #include <os/kernel/string.h>
 #include <os/kernel/timer.h>
+
+#include <hal_percpu.h>
 
 #define HEAP_INIT_SIZE 32
 

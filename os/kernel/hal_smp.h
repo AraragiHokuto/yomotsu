@@ -1,7 +1,6 @@
-#ifndef RENZAN_SMP_H_
-#define RENZAN_SMP_H_
+#ifndef __RENZAN_HAL_SMP_H__
+#define __RENZAN_HAL_SMP_H__
 
-#include <os/kernel/percpu.h>
 #include <os/kernel/types.h>
 
 struct cpu_s {
@@ -11,10 +10,8 @@ struct cpu_s {
 
 typedef struct cpu_s cpu_t;
 
-void   smp_init(void);
 uint   smp_current_cpu_id();
-void   smp_start_all_aps(void);
 cpu_t *smp_get_cpu(size_t id);
 uint   smp_cpu_count(void);
 
-#endif /* RENZAN_SMP_H_ */
+#endif /* __RENZAN_HAL_SMP_H__ */

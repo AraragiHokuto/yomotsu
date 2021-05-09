@@ -2,10 +2,12 @@
 
 ## Arch-specific definitions
 
-.include "arch/${BUILD_ARCH}/Makefile.inc"
+SRCROOT	= ${REPO_ROOT}/os/kernel
+
+.include "arch/Makefile.inc"
 
 SRCS	=\
-	${ARCH_SRCS:@SRC@arch/amd64/${SRC}@}	\
+	ig_entry.c	\
 	acpi.c	\
 	console.c	\
 	descriptor.c	\
@@ -14,7 +16,6 @@ SRCS	=\
 	init_loader.s	\
 	interrupt.c	\
 	interrupt.s	\
-	kernel.c	\
 	kobject.c	\
 	memory.c	\
 	mutex.c	\
@@ -26,28 +27,28 @@ SRCS	=\
 	sched.c	\
 	sched.s	\
 	simd.c	\
-	smp.c	\
-	smp.s	\
 	spinlock.c	\
 	syscall.c	\
 	syscall.s	\
 	string.c	\
 	timer.c	\
 	user_memory.c	\
-	vga_text.c
+	vga_text.c	\
+	${SRCS.${BUILD_ARCH}}
 
 CFLAGS	+=\
-	${ARCH_CFLAGS}	\
+	-I${SRCROOT}	\
 	-D_KERNEL	\
 	-ffreestanding	\
 	-fno-stack-protector	\
 	-nostdlib	\
-	-nostdinc
+	-nostdinc	\
+	${CFLAGS.${BUILD_ARCH}}	\
 
 .include "src.rules.make"
 
 LDFLAGS	+=\
-	${ARCH_LDFLAGS}
+	${LDFLAGS.${BUILD_ARCH}}
 
 .MAIN: all
 all: kernel.bin .PHONY
@@ -56,6 +57,6 @@ all: kernel.bin .PHONY
 	@cp kernel.bin ${SYSTEM_ROOT}/boot/kernel.bin
 
 kernel.bin: $(OBJS)
-	@echo "\tLD\tkernel.bin"
+	@echo -e "\tLD\tkernel.bin"
 	@$(LD) $(LDFLAGS) -o kernel.bin $(OBJS)
 

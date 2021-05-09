@@ -1,11 +1,14 @@
+# ig_mboot2.s -- Multiboot2 entry for igniter on AMD64
+
+
 .section	.multiboot2
 .align	8
 
-mb2h_begin:
+ig_mb2h_begin:
 # Multiboot2 magic fields
 .set	MB2H_MAGIC,	0xE85250D6
 .set	MB2H_ARCH,	0
-.set	MB2H_LEN,	mb2h_end - mb2h_begin
+.set	MB2H_LEN,	ig_mb2h_end - ig_mb2h_begin
 .set	MB2H_CKSUM,	-(MB2H_MAGIC + MB2H_ARCH + MB2H_LEN)
 
 .long	MB2H_MAGIC
@@ -37,7 +40,7 @@ mb2h_begin:
 .short	3				# type
 .short	0				# flags
 .long	12				# size
-.long	mb2_entry - VADDR_BASE		# entry addr
+.long	ig_mb2_entry - VADDR_BASE	# entry addr
 
 # Multiboot2 info request tag
 .align	8
@@ -62,15 +65,15 @@ mb2h_begin:
 .short	0	# flags
 .long	8	# size
 
-mb2h_end:
+ig_mb2h_end:
 
 .section	.bss
 .align	16
-boot_stack_bottom:
+ig_mb2_boot_stack_bottom:
 .skip	16384		# 16K boot stack
-boot_stack_top:
+ig_mb2_boot_stack_top:
 
-.set	ESP_ADDR,	boot_stack_top - VADDR_BASE
+.set	ESP_ADDR,	ig_mb2_boot_stack_top - VADDR_BASE
 
 .section	.data
 # initial page table
@@ -87,21 +90,21 @@ boot_stack_top:
 .endm
 
 .align	4096
-.global _pml4	# for smp.s
-_pml4:
-pml4e	_pdp
+.global ig_pml4	# for smp.s
+ig_pml4:
+pml4e	ig_pdp
 .skip	2040
-pml4e	_pml4
+pml4e	ig_pml4
 .skip	2032
-pml4e	_pdp
+pml4e	ig_pdp
 
-_pdp:
-pdpe	_pd_kern1
+ig_pdp:
+pdpe	ig_pd_kern1
 .skip	4072
-pdpe	_pd_kern1
-.quad	_pd_kern2
+pdpe	ig_pd_kern1
+.quad	ig_pd_kern2
 
-_pd_kern1:
+ig_pd_kern1:
 # first 32M
 pde	0
 pde	0x200000
@@ -121,11 +124,11 @@ pde	0x1E00000
 pde	0x2000000
 .skip	3968
 
-_pd_kern2:
+ig_pd_kern2:
 .skip	4096
 
 .align	16
-_gdt64:
+ig_gdt64:
 # null descriptor
 .short	0xFFFF
 .short	0
@@ -148,35 +151,35 @@ _gdt64:
 .byte	0
 .byte	0
 
-_gdt64_len	= . - _gdt64
+ig_gdt64_len	= . - ig_gdt64
 
-.global	_gdt64_ptr32, _gdt64_ptr	# for smp.s
-_gdt64_ptr32:
-.short	_gdt64_len
-.quad	_gdt64	- VADDR_BASE
-_gdt64_ptr:
-.short	_gdt64_len
-.quad	_gdt64
+.global	ig_gdt64_ptr32, ig_gdt64_ptr	# for smp.s
+ig_gdt64_ptr32:
+.short	ig_gdt64_len
+.quad	ig_gdt64	- VADDR_BASE
+ig_gdt64_ptr:
+.short	ig_gdt64_len
+.quad	ig_gdt64
 
 .section	.rodata
 .align	16
-panic_mb2_state_str:
+ig_panic_mb2_state_str:
 	.ascii	"panic: invalid multiboot2 state"
-panic_mb2_state_len	= . - panic_mb2_state_str
+ig_panic_mb2_state_len	= . - ig_panic_mb2_state_str
 
-panic_no_lm_str:
+ig_panic_no_lm_str:
 	.ascii	"panic: long mode unavaliable"
-panic_no_lm_len		= . - panic_no_lm_str
+ig_panic_no_lm_len	= . - ig_panic_no_lm_str
 
-panic_no_cpuid_str:
+ig_panic_no_cpuid_str:
 	.ascii	"panic: CPUID unavaliable"
-panic_no_cpuid_len	= . - panic_no_cpuid_str
+ig_panic_no_cpuid_len	= . - ig_panic_no_cpuid_str
 
 .section	.text
 .code32
-.global	mb2_entry
-.type	mb2_entry, @function
-mb2_entry:
+.global	ig_mb2_entry
+.type	ig_mb2_entry, @function
+ig_mb2_entry:
 	xchgw	%bx, %bx
 	cli
 	movl	$ESP_ADDR, %esp
@@ -184,7 +187,7 @@ mb2_entry:
 	# check for multiboot2 state
 .set	MB2_STATE_MAGIC, 0x36D76289
 	xorl	$MB2_STATE_MAGIC, %eax
-	jnz	_panic_mb2_state
+	jnz	ig_panic_mb2_state
 
 	# preserve multiboot2 boot info
 	pushl	%ebx
@@ -205,21 +208,21 @@ mb2_entry:
 	popfl
 
 	xorl	%eax, %ecx
-	jz	_panic_no_cpuid
+	jz	ig_panic_no_cpuid
 
 	# check if long mode is avaliable
 	movl	$0x80000000, %eax
 	cpuid
 	cmpl	$0x80000001, %eax
-	jb	_panic_no_longmode
+	jb	ig_panic_no_longmode
 
 	movl	$0x80000001, %eax
 	cpuid
 	testl	$(1 << 29), %edx
-	jz	_panic_no_longmode
+	jz	ig_panic_no_longmode
 
 	# load pml4 into cr3
-	movl	$_pml4 - VADDR_BASE, %edi
+	movl	$ig_pml4 - VADDR_BASE, %edi
 	movl	%edi, %cr3
 
 	# enable PAE
@@ -242,14 +245,14 @@ mb2_entry:
 	popl	%edi
 
 	# load 64bit GDT
-	lgdt	_gdt64_ptr32 - VADDR_BASE
+	lgdt	ig_gdt64_ptr32 - VADDR_BASE
 
 	# go long mode
-	jmp	$0x08, $_lm_entry
+	jmp	$0x08, $ig_lm_entry
 .code64
-_lm_entry	= . - VADDR_BASE
+ig_lm_entry	= . - VADDR_BASE
 	# load gdt in higher half
-	lgdt	_gdt64_ptr
+	lgdt	ig_gdt64_ptr
 
 	# load 64-bit data segments
 	movw	$0x10, %ax
@@ -278,35 +281,35 @@ _lm_entry	= . - VADDR_BASE
 	movq	%rax, (%rax)
 
 	# go higher half
-	movabs	$_higher_half_entry, %rax
+	movabs	$ig_higher_half_entry, %rax
 	jmp	*%rax
 
-_higher_half_entry:
+ig_higher_half_entry:
 	xorq	%rbp, %rbp
 	pushq	%rbp
-	call	mb2_kmain
+	call	ig_mb2_c_entry
 1:
 	cli
 	hlt
 	jmp	1b
 
 .code32
-_panic_mb2_state:
-	movl	$panic_mb2_state_str - VADDR_BASE, %ecx
-	movl	$panic_mb2_state_len, %edx
-	jmp	_panic32
+ig_panic_mb2_state:
+	movl	$ig_panic_mb2_state_str - VADDR_BASE, %ecx
+	movl	$ig_panic_mb2_state_len, %edx
+	jmp	ig_panic32
 
-_panic_no_cpuid:
-	movl	$panic_no_cpuid_str - VADDR_BASE, %ecx
-	movl	$panic_no_cpuid_len, %edx
-	jmp	_panic32
+ig_panic_no_cpuid:
+	movl	$ig_panic_no_cpuid_str - VADDR_BASE, %ecx
+	movl	$ig_panic_no_cpuid_len, %edx
+	jmp	ig_panic32
 
-_panic_no_longmode:
-	movl	$panic_no_lm_str - VADDR_BASE, %ecx
-	movl	$panic_no_lm_len, %edx
-	jmp	_panic32
+ig_panic_no_longmode:
+	movl	$ig_panic_no_lm_str - VADDR_BASE, %ecx
+	movl	$ig_panic_no_lm_len, %edx
+	jmp	ig_panic32
 
-_puts32:
+ig_puts32:
 	pushl	%ebp
 	pushl	%ebx
 	movl	$0xB8000, %ebp
@@ -323,9 +326,9 @@ _puts32:
 	popl	%ebp
 	ret
 
-_panic32:
+ig_panic32:
 	cli
-	call	_puts32
+	call	ig_puts32
 	xchgw	%bx, %bx	# bochs magic break
 1:
 	hlt

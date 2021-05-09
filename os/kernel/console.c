@@ -2,10 +2,11 @@
 #include <os/kernel/console.h>
 #include <os/kernel/interrupt.h>
 #include <os/kernel/cdefs.h>
-#include <os/kernel/percpu.h>
 #include <os/kernel/spinlock.h>
 #include <os/kernel/string.h>
 #include <os/kernel/types.h>
+
+#include <hal_percpu.h>
 
 static con_driver_t *_driver;
 static spinlock_t    lock;

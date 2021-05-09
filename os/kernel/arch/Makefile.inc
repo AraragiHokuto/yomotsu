@@ -1,0 +1,1 @@
+.include "arch/amd64/Makefile.inc"

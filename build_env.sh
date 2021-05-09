@@ -9,7 +9,7 @@
 export REPO_ROOT=`git rev-parse --show-toplevel`
 
 ## Distributable system root location
-export SYSTEM_ROOT=${REPO_ROOT}/sysroot
+export SYSTEM_ROOT=${REPO_ROOT}/proto
 
 ## Working dir for build process
 export BUILD_DIR=${REPO_ROOT}/build

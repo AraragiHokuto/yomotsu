@@ -1,10 +1,10 @@
+#include <hal_percpu.h>
+#include <hal_smp.h>
+#include <os/kernel/cdefs.h>
 #include <os/kernel/console.h>
 #include <os/kernel/list.h>
-#include <os/kernel/cdefs.h>
-#include <os/kernel/percpu.h>
 #include <os/kernel/process.h>
 #include <os/kernel/sched.h>
-#include <os/kernel/smp.h>
 #include <os/kernel/spinlock.h>
 #include <os/kernel/timer.h>
 

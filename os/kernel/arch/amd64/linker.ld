@@ -1,4 +1,4 @@
-ENTRY(mb2_entry)
+ENTRY(ig_mb2_entry)
 SECTIONS
 {
         . = 0xFFFFFFFF80000000;
