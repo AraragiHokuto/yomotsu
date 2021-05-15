@@ -8,6 +8,7 @@ SRCROOT	= ${REPO_ROOT}/os/kernel
 
 SRCS	=\
 	ig_entry.c	\
+	k_cap.c	\
 	acpi.c	\
 	console.c	\
 	descriptor.c	\
@@ -37,8 +38,10 @@ SRCS	=\
 	${SRCS.${BUILD_ARCH}}
 
 CFLAGS	+=\
+	-I${REPO_ROOT}/os/runtime/include \
 	-I${SRCROOT}	\
 	-D_KERNEL	\
+	-D__RZ_KERNEL	\
 	-ffreestanding	\
 	-fno-stack-protector	\
 	-nostdlib	\
