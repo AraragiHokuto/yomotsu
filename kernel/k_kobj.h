@@ -1,3 +1,4 @@
+/* XXX to be removed */
 #ifndef RENZAN_KOBJECT_H__
 #define RENZAN_KOBJECT_H__
 

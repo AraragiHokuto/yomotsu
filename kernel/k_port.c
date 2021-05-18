@@ -1,7 +1,8 @@
+/* XXX to be reimplemented */
+
 #include <hal_percpu.h>
 #include <k_cdefs.h>
 #include <k_console.h>
-#include <osrt/error.h>
 #include <k_futex.h>
 #include <k_list.h>
 #include <k_memory.h>
@@ -10,6 +11,8 @@
 #include <k_string.h>
 #include <k_timer.h>
 #include <k_user_mem.h>
+
+#include <osrt/error.h>
 
 struct port_hash_entry_s {
         list_node_t node;

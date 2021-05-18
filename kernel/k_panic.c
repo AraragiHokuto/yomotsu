@@ -1,3 +1,6 @@
+/* k_panic.c -- PANIC implementation */
+/* XXX should move to KRT */
+
 #include <hal_percpu.h>
 #include <k_cdefs.h>
 #include <k_console.h>

@@ -1,4 +1,4 @@
-/* hal_percpu.h -- HAL per-CPU data implementation */
+/* hal_percpu.h -- HAL Per-CPU data implementation */
 
 /*
  * Copyright 2021 Mosakuji Hokuto.

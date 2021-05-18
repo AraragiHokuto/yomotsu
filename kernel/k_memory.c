@@ -1,11 +1,12 @@
+/* XXX to be reimplemented */
+
+#include <hal_percpu.h>
 #include <k_atomic.h>
-#include <k_console.h>
 #include <k_cdefs.h>
+#include <k_console.h>
 #include <k_memory.h>
 #include <k_mutex.h>
 #include <k_string.h>
-
-#include <hal_percpu.h>
 
 #define ALIGNDOWN(x, r) ((x) & ~((r)-1))
 #define ALIGNUP(x, r)   (ALIGNDOWN((x)-1, r) + (r))
@@ -452,7 +453,7 @@ static void
 vm_empty_pd(pde_t *pd)
 {
         for (size_t i = 0; i < 512; ++i) {
-		if (!pd[i].present) continue;
+                if (!pd[i].present) continue;
                 pma_free(pd[i].addr << 12, KMEM_PAGE_SIZE);
                 pd[i].present = 0;
         }
@@ -462,7 +463,7 @@ static void
 vm_empty_pdp(pdpe_t *pdp)
 {
         for (size_t i = 0; i < 512; ++i) {
-		if (!pdp[i].present) continue;
+                if (!pdp[i].present) continue;
                 pde_t *pd = vm_get_vma_for_pma(pdp[i].addr << 12);
                 vm_empty_pd(pd);
                 free_pt(pdp[i].addr << 12);
@@ -474,7 +475,7 @@ static void
 vm_empty_userland(pml4e_t *pml4)
 {
         for (size_t i = 0; i < 256; ++i) {
-		if (!pml4[i].present) continue;
+                if (!pml4[i].present) continue;
                 pdpe_t *pdp = vm_get_vma_for_pma(pml4[i].addr << 12);
                 vm_empty_pdp(pdp);
                 pml4[i].present = 0;

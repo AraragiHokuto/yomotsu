@@ -1,3 +1,5 @@
+/* XXX to be reimplmented */
+
 #ifndef RENZAN_SPINLOCK_H__
 #define RENZAN_SPINLOCK_H__
 

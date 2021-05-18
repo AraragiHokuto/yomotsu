@@ -1,8 +1,10 @@
-#ifndef RENZAN_USER_MEMORY_H__
-#define RENZAN_USER_MEMORY_H__
+/* k_user_mem.h -- Safe userland memory access */
+/* XXX should move to HAL */
+
+#ifndef __RENZAN_K_USER_MEM_H__
+#define __RENZAN_K_USER_MEM_H__
 
 #include <k_memory.h>
-
 
 boolean user_memory_check_read(address_space_t *as, void *vma, size_t size);
 boolean user_memory_check_write(address_space_t *as, void *vma, size_t size);
@@ -22,4 +24,4 @@ sint user_memory_copy(
     address_space_t *dst_as, void *dst_vaddr, address_space_t *src_as,
     void *src_vaddr, size_t size);
 
-#endif /* RENZAN_USER_MEMORY_H__ */
+#endif /* __RENZAN_K_USER_MEM_H__ */

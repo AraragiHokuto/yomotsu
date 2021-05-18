@@ -1,4 +1,6 @@
 /* port_ifce.h -- port-like interface for various kernel functions */
+/* XXX to be removed */
+
 #ifndef RENZAN_PORT_IFCE_H__
 #define RENZAN_PORT_IFCE_H__
 

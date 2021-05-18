@@ -1,3 +1,5 @@
+/* XXX to be removed */
+
 #include <k_asm.h>
 #include <k_atomic.h>
 #include <k_console.h>

@@ -1,14 +1,37 @@
-#include <k_acpi.h>
-#include <k_asm.h>
+/* k_int.c -- Interruption handling */
 
-#include <k_console.h>
-#include <k_int.h>
-#include <k_cdefs.h>
-#include <k_memory.h>
-#include <k_string.h>
+/*
+ * Copyright 2021 Mosakuji Hokuto <shikieiki@yamaxanadu.org>.
+ * All rights reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 
 #include <hal_percpu.h>
+#include <k_acpi.h>
+#include <k_asm.h>
+#include <k_cdefs.h>
+#include <k_console.h>
+#include <k_int.h>
+#include <k_memory.h>
+#include <k_string.h>
 
 typedef struct idt_gate_s {
         u16 off_low;

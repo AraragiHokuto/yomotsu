@@ -1,11 +1,12 @@
-#include <k_console.h>
+/* ig_init_loader.c -- Init ELF loader */
+/* XXX to be removed */
+
+#include <hal_percpu.h>
 #include <k_cdefs.h>
+#include <k_console.h>
 #include <k_memory.h>
 #include <k_proc.h>
 #include <k_string.h>
-
-
-#include <hal_percpu.h>
 
 #define ELF_MAGIC 0x464c457f
 

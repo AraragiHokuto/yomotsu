@@ -1,3 +1,5 @@
+/* XXX to be reimplemented */
+
 #include <hal_smp.h>
 #include <k_cdefs.h>
 #include <k_spinlock.h>

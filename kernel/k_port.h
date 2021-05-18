@@ -1,3 +1,5 @@
+/* XXX to be reimplemented */
+
 #ifndef RENZAN_PORT_H__
 #define RENZAN_PORT_H__
 

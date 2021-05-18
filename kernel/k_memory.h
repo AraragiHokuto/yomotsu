@@ -1,3 +1,5 @@
+/* XXX to be reimplemented */
+
 #ifndef RENZAN_MEMORY_H_
 #define RENZAN_MEMORY_H_
 

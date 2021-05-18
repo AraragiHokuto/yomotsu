@@ -1,3 +1,4 @@
+/* XXX to be removed */
 #ifndef RENZAN_MUTEX_H__
 #define RENZAN_MUTEX_H__
 
