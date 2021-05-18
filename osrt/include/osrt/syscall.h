@@ -1,4 +1,28 @@
-/* syscall.h -- thin wrapper around kernel syscalls */
+/* syscall.h -- Syscall wrapperes */
+
+/*
+ * Copyright 2021 Mosakuji Hokuto <shikieiki@yamaxanadu.org>.
+ * All rights reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #ifndef __RENZAN_OSRT_SYSCALL_H__
 #define __RENZAN_OSRT_SYSCALL_H__
 
@@ -30,7 +54,7 @@ enum __OSRT_SYSCALLS {
 
 #endif /* __RZ_KERNEL */
 
-#ifdef __RENZAN_OSRT
+#ifdef __RZ_OSRT
 
 #include <stddef.h>
 #include <stdint.h>
@@ -69,6 +93,6 @@ int64_t      syscall_reincarnate(kobject_t address_space, void *entry)
 void syscall_futex_wait(void *addr, __osrt_futex_val_t val);
 void syscall_futex_wake(void *addr, size_t wake_count);
 
-#endif /* __RENZAN_OSRT */
+#endif /* __RZ_OSRT */
 
-#endif /* __RENZAN_OSRT_SYSCALL_H_ */
+#endif /* __RENZAN_OSRT_SYSCALL_H__ */

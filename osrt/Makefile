@@ -22,7 +22,7 @@ SRCS	=\
 	rt/syscall.s
 
 CFLAGS	+=\
-	-D__RENZAN_OSRT	\
+	-D__RZ_OSRT	\
 	-nostdlibinc	\
 	-I$(SRCROOT)/include
 

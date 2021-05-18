@@ -1,4 +1,4 @@
-/* osrt/types.h -- OS type definitions */
+/* osrt/types.h -- Common type definitions */
 
 /*
  * Copyright 2021 Mosakuji Hokuto <shikieiki@yamaxanadu.org>.

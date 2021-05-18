@@ -1,6 +1,8 @@
 /* port.h -- port system wrapping */
-#ifndef __RENZAN_LIBOS_PORT_H__
-#define __RENZAN_LIBOS_PORT_H__
+/* XXX to be reimplemented */
+
+#ifndef __RENZAN_OSRT_PORT_H__
+#define __RENZAN_OSRT_PORT_H__
 
 #include <osrt/kobject.h>
 #include <osrt/process.h>
@@ -46,4 +48,4 @@ int port_response(
 
 #endif /* __RZ_KERNEL */
 
-#endif /* __RENZAN_LIBOS_PORT_H__ */
+#endif /* __RENZAN_OSRT_PORT_H__ */

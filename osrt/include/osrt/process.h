@@ -52,7 +52,7 @@ bool         process_wait(__osrt_pid_t pid, __osrt_s64 *ret);
 // pid_t process_spawn_from_memory(void *executable)
 _Noreturn void process_exit(__osrt_s64 retval);
 
-#ifdef __RENZAN_OSRT
+#ifdef __RZ_OSRT
 
 /* init data -- always resides at the end of userspace */
 struct __libos_process_init_data_s {
@@ -76,7 +76,7 @@ typedef struct __libos_process_init_data_s __libos_process_init_data_t;
         ((__libos_process_init_data_t \
               *)((uint8_t *)page + __PAGE_SIZE - sizeof(__libos_process_init_data_t)))
 
-#endif /* __RENZAN_OSRT */
+#endif /* __RZ_OSRT */
 
 
 #ifdef __RZ_KERNEL

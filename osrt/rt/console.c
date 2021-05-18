@@ -1,3 +1,5 @@
+/* XXX to be reimplemented */
+
 #include <errno.h>
 #include <string.h>
 

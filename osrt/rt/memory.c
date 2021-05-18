@@ -1,3 +1,5 @@
+/* XXX to be reimplemented */
+
 #include <osrt/syscall.h>
 
 #include <errno.h>

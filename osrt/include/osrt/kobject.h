@@ -1,4 +1,4 @@
-/* XXX Will be removed soon */
+/* XXX to be removed */
 
 #ifndef __RENZAN_OSRT_KOBJECT_H__
 #define __RENZAN_OSRT_KOBJECT_H__

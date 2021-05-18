@@ -53,6 +53,8 @@ port_request(port_t port, port_request_t *request)
         return 0;
 }
 
+/* XXX to be reimplemented */
+
 int
 port_receive(
     port_t port, port_request_t *buffer, void *data_buffer, size_t buffer_size)
