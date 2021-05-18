@@ -1,0 +1,22 @@
+name: clang-format check
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  format-check:
+    name: code format check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        path:
+          - 'kernel'
+          - 'kernel/arch/amd64'
+          - 'osrt/c'
+          - 'osrt/rt'
+          - 'osrt/include'
+          - 'osrt/include/osrt'
+    steps:
+      - uses: actions/checkout@v2
+      - name: clang-format check for C/C++ sources
+        uses: jidicula/clang-format-action@v3.4.0
+        with:
+          clang-format-version: '11'
+          check-patch: ${{ matrix.path }}
