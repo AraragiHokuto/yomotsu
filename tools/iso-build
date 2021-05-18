@@ -1,0 +1,18 @@
+#!/bin/sh
+
+set -e
+
+. "$1"
+
+if [ -x "$(command -v grub2-mkrescue)" ]; then
+    GRUB_MKRESCUE=grub2-mkrescue
+elif [ -x "$(command -v grub-mkrescue)" ]; then
+    GRUB_MKRESCUE=grub-mkrescue
+else
+    echo "Failed to find grub-mkrescue"
+    exit -1
+fi
+
+mkdir -p ${SYSTEM_ROOT}/boot/grub/
+cp grub.cfg ${SYSTEM_ROOT}/boot/grub/
+${GRUB_MKRESCUE} -o renzan.iso ${SYSTEM_ROOT}

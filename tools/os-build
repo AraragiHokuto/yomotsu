@@ -1,0 +1,62 @@
+#!/bin/sh
+
+set -e
+
+. "$1"
+
+## Build Timestamp
+export __BUILD_TIMESTAMP=$(date '+%Y%m%d%H%M')
+
+## Commit hash
+export __COMMIT=$(git rev-parse --short HEAD)
+
+case $BUILD_ARCH in
+    amd64)
+	TRIPLE_ARCH=x86_64
+	;;
+esac
+
+case $BUILD_TYPE in
+    Debug)
+	CFLAGS=-g
+	;;
+    Release)
+	CLAGS=-O2
+	;;
+esac
+
+# common CFLAGS
+export CFLAGS="\
+${CFLAGS} \
+-Wall -Wextra \
+-Wno-unused-function \
+-Wno-sign-compare \
+-D__OSC_BUILD_TS='${__BUILD_TIMESTAMP}' \
+-D__OSC_BUILD_CI='${__COMMIT}' \
+--target=${TRIPLE_ARCH}-pc-renzan-elf \
+--sysroot=${SYSTEM_ROOT}"
+
+# Add makefile rules inclusion
+export MAKEFLAGS=-I${REPO_ROOT}/makerules
+
+#
+# --- Info output ---
+#
+
+echo -e "Project root:\t${REPO_ROOT}"
+echo -e "Output sysroot:\t${SYSTEM_ROOT}"
+echo -e "Build type:\t${BUILD_TYPE}"
+echo -e "Target triple:\t${TRIPLE_ARCH}-pc-renzan-elf"
+echo -e "C Compiler:\t${CC}"
+echo -e "Assembler:\t${AS}"
+echo -e "Linker:\t\t${LD}"
+echo -e
+
+echo -e "Building OSRT"
+${BSD_MAKE} -C osrt
+
+echo -e "Building Kernel"
+${BSD_MAKE} -C kernel
+
+echo -e "Building Commands"
+${BSD_MAKE} -C cmd
