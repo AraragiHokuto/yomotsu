@@ -5,8 +5,8 @@
 
 #ifdef _KERNEL
 
-#include <k_mutex.h>
 #include <k_atomic.h>
+#include <k_mutex.h>
 
 #include <osrt/types.h>
 

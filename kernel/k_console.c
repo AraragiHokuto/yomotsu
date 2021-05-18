@@ -1,12 +1,10 @@
 
+#include <hal_percpu.h>
+#include <k_cdefs.h>
 #include <k_console.h>
 #include <k_int.h>
-#include <k_cdefs.h>
 #include <k_spinlock.h>
 #include <k_string.h>
-
-
-#include <hal_percpu.h>
 
 static con_driver_t *_driver;
 static spinlock_t    lock;

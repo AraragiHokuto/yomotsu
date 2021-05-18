@@ -1,8 +1,8 @@
 /* early vga console driver */
 
 #include <k_asm.h>
-#include <k_console.h>
 #include <k_cdefs.h>
+#include <k_console.h>
 #include <k_string.h>
 
 #define DIMX 80

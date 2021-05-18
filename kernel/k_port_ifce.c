@@ -2,12 +2,13 @@
 
 #include <k_asm.h>
 #include <k_atomic.h>
-#include <k_console.h>
-#include <osrt/error.h>
 #include <k_cdefs.h>
+#include <k_console.h>
 #include <k_port.h>
 #include <k_port_ifce.h>
 #include <k_string.h>
+
+#include <osrt/error.h>
 
 /* interface declarations */
 void port_ifce_debug_print_init(void);

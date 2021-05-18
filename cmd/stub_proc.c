@@ -10,28 +10,24 @@
 #define PS2_PORT_STATUS  0x64
 #define PS2_PORT_COMMAND 0x64
 
-void __attribute__((constructor))
-__constructor1(void)
+void __attribute__((constructor)) __constructor1(void)
 {
-	printf("constructor1\n");
+        printf("constructor1\n");
 }
 
-void __attribute__((constructor))
-__constructor2(void)
+void __attribute__((constructor)) __constructor2(void)
 {
-	printf("constructor2\n");
+        printf("constructor2\n");
 }
 
-void __attribute__((destructor))
-__destructor1(void)
+void __attribute__((destructor)) __destructor1(void)
 {
-	printf("destructor1\n");
+        printf("destructor1\n");
 }
 
-void __attribute__((destructor))
-__destructor2(void)
+void __attribute__((destructor)) __destructor2(void)
 {
-	printf("destructor2\n");
+        printf("destructor2\n");
 }
 
 void

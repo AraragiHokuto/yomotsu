@@ -26,9 +26,6 @@
 #ifndef __RENZAN_K_PROC_H__
 #define __RENZAN_K_PROC_H__
 
-#include <osrt/types.h>
-#include <osrt/process.h>
-
 #include <k_atomic.h>
 #include <k_futex.h>
 #include <k_int.h>
@@ -36,6 +33,9 @@
 #include <k_memory.h>
 #include <k_mutex.h>
 #include <k_sched.h>
+
+#include <osrt/process.h>
+#include <osrt/types.h>
 
 struct kobject_s;
 typedef struct kobject_s kobject_t;
@@ -47,10 +47,10 @@ enum PROCESS_STATE {
 };
 
 enum PROCESS_EXCEPTION {
-	PROC_EXCEPTION_NONE = 0,
-	PROC_EXCEPTION_DIV_BY_ZERO,
-	PROC_EXCEPTION_PROTECTION,
-	PROC_EXCEPTION_ACCESS_VIOLATION,
+        PROC_EXCEPTION_NONE = 0,
+        PROC_EXCEPTION_DIV_BY_ZERO,
+        PROC_EXCEPTION_PROTECTION,
+        PROC_EXCEPTION_ACCESS_VIOLATION,
 };
 
 struct process_s {
@@ -74,7 +74,7 @@ struct process_s {
         list_node_t       sibling_list_node;
         list_node_t       child_list_head;
 
-        futex_val_t       exited_child_count;
+        futex_val_t exited_child_count;
 
         struct {
                 void *    rsp;

@@ -1,6 +1,6 @@
 #include <assert.h>
-#include <stdlib.h> // abort();
 #include <stdio.h>
+#include <stdlib.h> // abort();
 
 void
 __assert(
@@ -8,5 +8,5 @@ __assert(
 {
         if (val) { return; }
         printf("assertion failed: %s at %s:%d:%s", expr, file, line, func);
-	abort();
+        abort();
 }

@@ -4,7 +4,6 @@
 
 #include <k_atomic.h>
 
-
 #ifdef _KERNEL
 
 struct mutex_s {

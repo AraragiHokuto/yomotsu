@@ -29,15 +29,15 @@
 percpu_data_t *
 percpu(void)
 {
-	void *ret;
-	asm volatile("movq %%gs:0, %0": "=r"(ret));
-	return ret;
+        void *ret;
+        asm volatile("movq %%gs:0, %0" : "=r"(ret));
+        return ret;
 }
 
 uint
 smp_current_cpu_id(void)
 {
-	return percpu()->cpuid;
+        return percpu()->cpuid;
 }
 
 uint __smp_cpu_count = 0;
@@ -45,5 +45,5 @@ uint __smp_cpu_count = 0;
 uint
 smp_cpu_count(void)
 {
-	return __smp_cpu_count;
+        return __smp_cpu_count;
 }

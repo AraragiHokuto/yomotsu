@@ -6,6 +6,6 @@
 
 #include <stddef.h>
 
-void console_write(const char* str, size_t str_size);
+void console_write(const char *str, size_t str_size);
 
-#endif	/* __RENZAN_OSRT_CONSOLE_H__ */
+#endif /* __RENZAN_OSRT_CONSOLE_H__ */

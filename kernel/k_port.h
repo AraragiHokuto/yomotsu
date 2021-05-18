@@ -3,13 +3,13 @@
 #ifndef RENZAN_PORT_H__
 #define RENZAN_PORT_H__
 
-#include <osrt/types.h>
-#include <osrt/port.h>
-
 #include <k_atomic.h>
 #include <k_kobj.h>
 #include <k_list.h>
 #include <k_mutex.h>
+
+#include <osrt/port.h>
+#include <osrt/types.h>
 
 typedef struct __osrt_port_request_s port_request_user_t;
 
@@ -70,6 +70,5 @@ port_request_t *port_receive(port_server_ref_t *ref, void *buf, size_t buflen);
 void            port_response(
                port_server_ref_t *ref, u64 retval_small, void *retval, size_t retval_size,
                int *error);
-
 
 #endif /* RENZAN_PORT_H__ */

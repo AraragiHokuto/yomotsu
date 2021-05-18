@@ -32,7 +32,7 @@ typedef __osrt_u64 __osrt_pid_t;
 
 struct process_state_s {
         __osrt_pid_t process_id;
-        __osrt_u64 retval;
+        __osrt_u64   retval;
 };
 
 /* XXX to be removed */
@@ -77,7 +77,6 @@ typedef struct __libos_process_init_data_s __libos_process_init_data_t;
               *)((uint8_t *)page + __PAGE_SIZE - sizeof(__libos_process_init_data_t)))
 
 #endif /* __RZ_OSRT */
-
 
 #ifdef __RZ_KERNEL
 

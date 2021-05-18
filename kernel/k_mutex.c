@@ -1,10 +1,9 @@
 /* XXX to be removed */
 
-#include <k_int.h>
-#include <k_cdefs.h>
-#include <k_mutex.h>
-
 #include <hal_percpu.h>
+#include <k_cdefs.h>
+#include <k_int.h>
+#include <k_mutex.h>
 
 /* stub content for owner field */
 #define STUB_THREAD ((void *)0xffef000000000000)

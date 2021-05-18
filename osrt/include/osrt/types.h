@@ -59,7 +59,6 @@ typedef __osrt_u8   __osrt_byte;
 /* Boolean value definitions */
 typedef __osrt_uint __osrt_boolean;
 
-
 /* Kernel space type definitions */
 typedef __osrt_u8      u8;
 typedef __osrt_u16     u16;
@@ -80,15 +79,15 @@ typedef __osrt_byte    byte;
 /* Kernel space boolean definitions */
 typedef __osrt_boolean boolean;
 
-#define B_TRUE __OSRT_TRUE
+#define B_TRUE  __OSRT_TRUE
 #define B_FALSE __OSRT_FALSE
 
 #define BOOL(x) __OSRT_BOOLEAN((x))
 
 #else /* __RZ_KERNEL */
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 /* Reserved identifiers to avoid userland namespace collision */
 

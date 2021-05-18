@@ -1,8 +1,7 @@
+#include <hal_percpu.h>
 #include <k_descriptor.h>
 #include <k_memory.h>
 #include <k_string.h>
-
-#include <hal_percpu.h>
 
 void
 descriptor_init(void)
