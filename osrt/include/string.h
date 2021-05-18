@@ -47,18 +47,18 @@ int    strncmp(const char *s1, const char *s2, size_t n);
 size_t strxfrm(char *restrict s1, const char *restrict s2, size_t n);
 
 /* Search functions */
-void *memchr(const void *s, int c, size_t n);
-char *strchr(const char *s, int c);
+void * memchr(const void *s, int c, size_t n);
+char * strchr(const char *s, int c);
 size_t strcspn(const char *s1, const char *s2);
-char *strpbrk(const char *s1, const char *s2);
-char *strrchr(const char *s, int c);
+char * strpbrk(const char *s1, const char *s2);
+char * strrchr(const char *s, int c);
 size_t strspn(const char *s1, const char *s2);
-char *strstr(const char *s1, const char *s2);
-char *strtok(char *restrict s1, const char *restrict s2);
+char * strstr(const char *s1, const char *s2);
+char * strtok(char *restrict s1, const char *restrict s2);
 
 /* Miscellaneous functions */
-void *memset(void *s, int c, size_t n);
-char *strerror(int errnum);
+void * memset(void *s, int c, size_t n);
+char * strerror(int errnum);
 size_t strlen(const char *s);
 
 #endif /* __RENZAN_CSTD_STRING_H_ */

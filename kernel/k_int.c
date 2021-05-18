@@ -23,7 +23,6 @@
  * SOFTWARE.
  */
 
-
 #include <hal_percpu.h>
 #include <k_acpi.h>
 #include <k_asm.h>

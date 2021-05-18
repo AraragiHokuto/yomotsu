@@ -32,7 +32,7 @@ typedef struct process_s process_t;
 
 struct sched_percpu_data_s {
         // process_t *starve_scan_process;
-        boolean    sched_enabled;
+        boolean sched_enabled;
 };
 
 typedef struct sched_percpu_data_s sched_percpu_data_t;

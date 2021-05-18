@@ -8,8 +8,8 @@
 #include <k_mutex.h>
 #include <k_proc.h>
 
-#include <osrt/types.h>
 #include <osrt/kobject.h>
+#include <osrt/types.h>
 
 enum KOBJ_TYPE {
         KOBJ_UNALLOCED  = 0,

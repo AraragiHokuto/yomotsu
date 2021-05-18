@@ -29,8 +29,8 @@
 #ifdef __RZ_OSRT
 
 #define ALIGNDOWN(x, a) ((x) / (a) * (a))
-#define ALIGNUP(x, a) ((((x) - 1) / (a) + 1) * (a))
+#define ALIGNUP(x, a)   ((((x)-1) / (a) + 1) * (a))
 
-#endif	/* __RZ_OSRT */
+#endif /* __RZ_OSRT */
 
-#endif	/* __RENZAN_OSRT_MISC_H__ */
+#endif /* __RENZAN_OSRT_MISC_H__ */

@@ -1,6 +1,6 @@
 #include <k_acpi.h>
-#include <k_console.h>
 #include <k_cdefs.h>
+#include <k_console.h>
 #include <k_memory.h>
 #include <k_string.h>
 

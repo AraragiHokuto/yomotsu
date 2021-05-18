@@ -39,13 +39,13 @@ enum __OSRT_ERROR_CODES {
         __OSRT_ERROR_NOENT,
         __OSRT_ERROR_NOMEM,
         __OSRT_ERROR_DENIED,
-	__OSRT_ERROR_TIMEDOUT,
+        __OSRT_ERROR_TIMEDOUT,
 
-	__OSRT_ERROR_PORT_REQ_CANCELED,
-	__OSRT_ERROR_PORT_REQ_TOO_LONG,
-	__OSRT_ERROR_PORT_NAME_OCCUPIED,
-	__OSRT_ERROR_PORT_CLOSED,
-	__OSRT_ERROR_END
+        __OSRT_ERROR_PORT_REQ_CANCELED,
+        __OSRT_ERROR_PORT_REQ_TOO_LONG,
+        __OSRT_ERROR_PORT_NAME_OCCUPIED,
+        __OSRT_ERROR_PORT_CLOSED,
+        __OSRT_ERROR_END
 };
 
 #ifdef __RZ_KERNEL
@@ -53,7 +53,7 @@ enum __OSRT_ERROR_CODES {
 typedef __osrt_error_t error_t;
 
 #define ERROR(_type) (__OSRT_ERROR_##_type)
-#define OK __OSRT_OK
+#define OK           __OSRT_OK
 
 #endif /* __RZ_KERNEL */
 

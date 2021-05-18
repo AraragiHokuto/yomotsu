@@ -14,8 +14,9 @@
 
 #define USE_LOCKS 0
 
-#include <osrt/memory.h>
 #include <stddef.h> /* size_t */
+
+#include <osrt/memory.h>
 
 #define malloc_getpagesize __OSRT_PAGE_SIZE
 

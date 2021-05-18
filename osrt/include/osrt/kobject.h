@@ -11,10 +11,10 @@ typedef __osrt_size_t __osrt_kobject_handler_t;
 
 typedef __osrt_kobject_handler_t kobject_handler_t;
 
-#else  /* __RZ_KERNEL */
+#else /* __RZ_KERNEL */
 
 typedef __osrt_kobject_handler_t kobject_t;
 
-#endif	/* __RZ_KERNEL */
+#endif /* __RZ_KERNEL */
 
-#endif	/* __RENZAN_OSRT_KOBJECT_H__ */
+#endif /* __RENZAN_OSRT_KOBJECT_H__ */

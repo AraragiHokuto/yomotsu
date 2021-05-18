@@ -20,4 +20,4 @@ int isxdigit(int c);
 int tolower(int c);
 int toupper(int c);
 
-#endif	/* __RENZAN_CSTD_CTYPE_H__ */
+#endif /* __RENZAN_CSTD_CTYPE_H__ */

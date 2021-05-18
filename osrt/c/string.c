@@ -1,9 +1,9 @@
+#include <errno.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-#include <errno.h>
 
 /* Copy n bytes from src to dst, assume no overlap */
 static void
@@ -331,37 +331,37 @@ memset(void *s, int c, size_t n)
 char *
 strerror(int errnum)
 {
-	switch (errnum) {
-	case _OK:
-		return "OK";
-	case ENOMEM:
-		return "Out of memory";
-	case EPERM:
-		return "Forbidden";
-	case EINVAL:
-		return "Invalid argument";
-	case ENOENT:
-		return "No entity";
-	case EDOM:
-		return "EDOM";
-	case EILSEQ:
-		return "EILSEQ";
-	case ERANGE:
-		return "Range error;";
-	case EOVERFLOW:
-		return "Overflow";
+        switch (errnum) {
+        case _OK:
+                return "OK";
+        case ENOMEM:
+                return "Out of memory";
+        case EPERM:
+                return "Forbidden";
+        case EINVAL:
+                return "Invalid argument";
+        case ENOENT:
+                return "No entity";
+        case EDOM:
+                return "EDOM";
+        case EILSEQ:
+                return "EILSEQ";
+        case ERANGE:
+                return "Range error;";
+        case EOVERFLOW:
+                return "Overflow";
 
-	/* case KERN_ERROR_PORT_NAME_OCCUPIED: */
-	/* 	return "port error: port name already occupied"; */
-	/* case KERN_ERROR_PORT_DATA_TOO_LONG: */
-	/* 	return "port error: data too long"; */
-	/* case KERN_ERROR_PORT_CLOSED: */
-	/* 	return "port error: port already closed"; */
-	/* case KERN_ERROR_PORT_CANCELED: */
-	/* 	return "port error: request cancelled"; */
-	default:
-		return "Unknown error";
-	}
+        /* case KERN_ERROR_PORT_NAME_OCCUPIED: */
+        /* 	return "port error: port name already occupied"; */
+        /* case KERN_ERROR_PORT_DATA_TOO_LONG: */
+        /* 	return "port error: data too long"; */
+        /* case KERN_ERROR_PORT_CLOSED: */
+        /* 	return "port error: port already closed"; */
+        /* case KERN_ERROR_PORT_CANCELED: */
+        /* 	return "port error: request cancelled"; */
+        default:
+                return "Unknown error";
+        }
 }
 
 size_t
