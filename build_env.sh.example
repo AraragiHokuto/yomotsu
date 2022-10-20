@@ -25,7 +25,7 @@ export BUILD_ARCH=amd64
 
 ## Toolchain definitions
 ### LLVM root
-export LLVM_ROOT=`realpath ${REPO_ROOT}/../llvm-renzan-root`
+export LLVM_ROOT=`realpath ${REPO_ROOT}/../llvmpath`
 
 ### C Compiler
 export CC=${LLVM_ROOT}/bin/clang
