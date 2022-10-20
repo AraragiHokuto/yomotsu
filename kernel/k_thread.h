@@ -34,7 +34,7 @@
 #include <k_mutex.h>
 #include <k_sched.h>
 
-#include <osrt/process.h>
+#include <osrt/thread.h>
 #include <osrt/types.h>
 
 struct kobject_s;
@@ -56,7 +56,7 @@ enum THREAD_EXCEPTION {
 struct thread_s {
         mutex_t lock;
 
-        pid_t pid;
+        tid_t tid;
 
         u64 retval;
 

@@ -568,7 +568,7 @@ syscall_port_receive(
 
         port_request_user_t user_req;
         user_req.val_small   = req->val_small;
-        user_req.sender_pid  = req->sender->holder->pid;
+        user_req.sender_pid  = req->sender->holder->tid;
         user_req.data_size   = req->data_size;
         user_req.retval_size = req->retval_size;
 
@@ -611,7 +611,7 @@ syscall_port_response(
 void __thread_spawn_start(void *user_entry);
 
 s64
-syscall_process_spawn(kobject_handler_t as_handler, u64 user_entry)
+syscall_thread_spawn(kobject_handler_t as_handler, u64 user_entry)
 {
         if (as_handler == 0) {
                 /* can not use current address space */
@@ -641,11 +641,11 @@ syscall_process_spawn(kobject_handler_t as_handler, u64 user_entry)
         new_thread->sched_data.class = SCHED_CLASS_NORMAL;
         thread_start(new_thread, __thread_spawn_start, (void *)user_entry);
         sched_enter(new_thread);
-        return new_thread->pid;
+        return new_thread->tid;
 }
 
 s64
-syscall_process_exit(u64 retval)
+syscall_thread_exit(u64 retval)
 {
         mutex_acquire(&CURRENT_THREAD->lock);
         CURRENT_THREAD->retval = retval;
@@ -658,13 +658,13 @@ syscall_process_exit(u64 retval)
 }
 
 s64
-syscall_process_wait(pid_t pid, process_state_t *_stat)
+syscall_thread_wait(tid_t tid, thread_state_t *_stat)
 {
-        process_state_t stat;
+        thread_state_t stat;
 
-        thread_t *proc = NULL;
-        if (pid == (pid_t)-1) {
-                while (!proc) {
+        thread_t *th = NULL;
+        if (tid == (tid_t)-1) {
+                while (!th) {
                         futex_val_t exited_child =
                             CURRENT_THREAD->exited_child_count;
 
@@ -677,7 +677,7 @@ syscall_process_wait(pid_t pid, process_state_t *_stat)
                                         pp->terminate_flag, __ATOMIC_ACQUIRE)) {
                                         continue;
                                 }
-                                proc = pp;
+                                th = pp;
                         }
                         mutex_release(&CURRENT_THREAD->lock);
 
@@ -692,26 +692,26 @@ syscall_process_wait(pid_t pid, process_state_t *_stat)
                         thread_t *pp =
                             CONTAINER_OF(p, thread_t, sibling_list_node);
 
-                        if (pp->pid != pid) { continue; }
+                        if (pp->tid != tid) { continue; }
 
-                        proc = pp;
+                        th = pp;
                 }
                 mutex_release(&CURRENT_THREAD->lock);
 
-                if (!proc) { return -ERROR(INVAL); }
+                if (!th) { return -ERROR(INVAL); }
         }
 
         /* wait for process to exit */
         while (B_TRUE) {
-                u64 state = proc->state;
+                u64 state = th->state;
                 if (state == THREAD_STATE_EXITED) break;
-                futex_kwait(&proc->state, state);
+                futex_kwait(&th->state, state);
         }
 
-        stat.process_id = proc->pid;
-        stat.retval     = proc->retval;
+        stat.thread_id = th->tid;
+        stat.retval     = th->retval;
 
-        thread_destroy(proc);
+        thread_destroy(th);
 
         if (!user_memory_write(
                 CURRENT_ADDRESS_SPACE, _stat, &stat, sizeof(stat))) {
@@ -794,9 +794,9 @@ syscall_def(void)
         SYSCALLDEF(SYSCALL_PORT_REQUEST, syscall_port_request);
         SYSCALLDEF(SYSCALL_PORT_RECEIVE, syscall_port_receive);
         SYSCALLDEF(SYSCALL_PORT_RESPONSE, syscall_port_response);
-        SYSCALLDEF(SYSCALL_PROCESS_SPAWN, syscall_process_spawn);
-        SYSCALLDEF(SYSCALL_PROCESS_EXIT, syscall_process_exit);
-        SYSCALLDEF(SYSCALL_PROCESS_WAIT, syscall_process_wait);
+        SYSCALLDEF(SYSCALL_THREAD_SPAWN, syscall_thread_spawn);
+        SYSCALLDEF(SYSCALL_THREAD_EXIT, syscall_thread_exit);
+        SYSCALLDEF(SYSCALL_THREAD_WAIT, syscall_thread_wait);
         SYSCALLDEF(SYSCALL_REINCARNATE, syscall_reincarnate);
         SYSCALLDEF(SYSCALL_FUTEX_WAIT, syscall_futex_wait);
         SYSCALLDEF(SYSCALL_FUTEX_WAKE, syscall_futex_wake);

@@ -121,27 +121,28 @@ syscall_port_response(
             ret_data_size, 0, 0);
 }
 
-pid_t
-syscall_process_spawn(kobject_t address_space, void *entry_point)
+tid_t
+syscall_thread_spawn(kobject_t address_space, void *entry_point)
 {
         return __do_syscall(
-            __OSRT_SYSCALL_PROCESS_SPAWN, address_space, (uintptr_t)entry_point,
+            __OSRT_SYSCALL_THREAD_SPAWN, address_space, (uintptr_t)entry_point,
             0, 0, 0, 0);
 }
 
-void __attribute__((noreturn)) syscall_process_exit(uint64_t retval)
+void __attribute__((noreturn))
+syscall_thread_exit(uint64_t retval)
 {
-        __do_syscall(__OSRT_SYSCALL_PROCESS_EXIT, retval, 0, 0, 0, 0, 0);
+        __do_syscall(__OSRT_SYSCALL_THREAD_EXIT, retval, 0, 0, 0, 0, 0);
         /* dear compiler: we really don't return */
         while (1)
                 ;
 }
 
 int64_t
-syscall_process_wait(pid_t pid, process_state_t *state)
+syscall_thread_wait(tid_t tid, thread_state_t *state)
 {
         return __do_syscall(
-            __OSRT_SYSCALL_PROCESS_WAIT, pid, (uintptr_t)state, 0, 0, 0, 0);
+            __OSRT_SYSCALL_THREAD_WAIT, tid, (uintptr_t)state, 0, 0, 0, 0);
 }
 
 int64_t __attribute__((noreturn))

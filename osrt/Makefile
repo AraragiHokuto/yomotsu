@@ -17,7 +17,7 @@ SRCS	=\
 	rt/crt1.s	\
 	rt/memory.c	\
 	rt/port.c	\
-	rt/process.c	\
+	rt/thread.c	\
 	rt/syscall.c	\
 	rt/syscall.s
 

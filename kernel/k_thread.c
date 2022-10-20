@@ -127,79 +127,79 @@ thread_start(thread_t *target, void *entry, void *data)
             target);
 }
 
-#define PID_MAX            32768
-#define PID_BITMAP_ENTRIES 32768
-#define PID_BITMAP_SIZE    (PID_BITMAP_ENTRIES / 64)
+#define TID_MAX            32768
+#define TID_BITMAP_ENTRIES 32768
+#define TID_BITMAP_SIZE    (TID_BITMAP_ENTRIES / 64)
 
-static u64     pid_bitmap[PID_BITMAP_SIZE];
-static mutex_t pid_bitmap_lock;
+static u64     tid_bitmap[TID_BITMAP_SIZE];
+static mutex_t tid_bitmap_lock;
 
 static void
-pid_bitmap_set(size_t pos)
+tid_bitmap_set(size_t pos)
 {
-        ASSERT(pos < PID_BITMAP_ENTRIES);
+        ASSERT(pos < TID_BITMAP_ENTRIES);
 
         size_t idx = pos / 8;
         size_t off = pos % 8;
 
-        ASSERT((pid_bitmap[idx] & (1ull << off)) == 0);
+        ASSERT((tid_bitmap[idx] & (1ull << off)) == 0);
 
-        pid_bitmap[idx] |= (1ull << off);
+        tid_bitmap[idx] |= (1ull << off);
 }
 
 static void
-pid_bitmap_clear(size_t pos)
+tid_bitmap_clear(size_t pos)
 {
-        ASSERT(pos < PID_BITMAP_ENTRIES);
+        ASSERT(pos < TID_BITMAP_ENTRIES);
 
         size_t idx = pos / 8;
         size_t off = pos % 8;
 
-        ASSERT((pid_bitmap[idx] & (1ull << off)) != 0);
+        ASSERT((tid_bitmap[idx] & (1ull << off)) != 0);
 
-        pid_bitmap[idx] &= ~(1ull << off);
+        tid_bitmap[idx] &= ~(1ull << off);
 }
 
-static pid_t
-alloc_pid(void)
+static tid_t
+alloc_tid(void)
 {
         /* TODO: lockfree */
-        mutex_acquire(&pid_bitmap_lock);
+        mutex_acquire(&tid_bitmap_lock);
 
         size_t idx;
         size_t off;
-        for (idx = 0; idx < PID_BITMAP_SIZE; ++idx) {
-                if (pid_bitmap[idx] == ~(0ull)) { continue; }
+        for (idx = 0; idx < TID_BITMAP_SIZE; ++idx) {
+                if (tid_bitmap[idx] == ~(0ull)) { continue; }
 
                 for (off = 0; off < 64; ++off) {
-                        if (pid_bitmap[idx] & (1ull << off)) { continue; }
+                        if (tid_bitmap[idx] & (1ull << off)) { continue; }
 
-                        pid_t ret = idx * 8 + off;
-                        pid_bitmap_set(ret);
-                        mutex_release(&pid_bitmap_lock);
+                        tid_t ret = idx * 8 + off;
+                        tid_bitmap_set(ret);
+                        mutex_release(&tid_bitmap_lock);
                         return ret + 1;
                 }
 
                 ASSERT(off < 64);
         }
 
-        mutex_release(&pid_bitmap_lock);
+        mutex_release(&tid_bitmap_lock);
         return -1;
 }
 
 static void
-free_pid(pid_t pid)
+free_tid(tid_t tid)
 {
-        mutex_acquire(&pid_bitmap_lock);
-        pid_bitmap_clear(pid);
-        mutex_release(&pid_bitmap_lock);
+        mutex_acquire(&tid_bitmap_lock);
+        tid_bitmap_clear(tid);
+        mutex_release(&tid_bitmap_lock);
 }
 
 void
 thread_init(void)
 {
-        kmemset(pid_bitmap, 0, sizeof(pid_bitmap));
-        mutex_init(&pid_bitmap_lock);
+        kmemset(tid_bitmap, 0, sizeof(tid_bitmap));
+        mutex_init(&tid_bitmap_lock);
 
         tss_t *tss = kmem_alloc(sizeof(tss_t));
         kmemset(tss, 0, sizeof(tss_t));
@@ -233,19 +233,19 @@ thread_t*
 thread_create(thread_t *t, thread_t *parent)
 {
         (void)t;
-        pid_t pid = alloc_pid();
-        if (!pid) return NULL;
+        tid_t tid = alloc_tid();
+        if (!tid) return NULL;
 
         thread_t *ret = kmem_alloc(sizeof(thread_t));
         if (!ret) {
-                free_pid(pid);
+                free_tid(tid);
                 return NULL;
         }
 
         byte *kernel_stack = kmem_alloc(KERNEL_STACK_SIZE);
         if (!kernel_stack) {
                 kmem_free(ret);
-                free_pid(pid);
+                free_tid(tid);
                 return NULL;
         }
 
@@ -261,7 +261,7 @@ thread_create(thread_t *t, thread_t *parent)
                 simd_free_state_area(simd_state);
                 kmem_free(kernel_stack);
                 kmem_free(ret);
-                free_pid(pid);
+                free_tid(tid);
                 return NULL;
         }
 
@@ -270,7 +270,7 @@ thread_create(thread_t *t, thread_t *parent)
 
         mutex_init(&ret->lock);
 
-        ret->pid    = pid;
+        ret->tid    = tid;
         ret->retval = 0;
 
         ret->terminate_flag = B_FALSE;
@@ -313,7 +313,7 @@ thread_destroy(thread_t *thread)
         kmem_free((byte *)thread->kernel_stack - KERNEL_STACK_SIZE + 8);
         simd_free_state_area(thread->cpu_state.simd_state);
 
-        free_pid(thread->pid);
+        free_tid(thread->tid);
         kmem_free(thread);
 }
 

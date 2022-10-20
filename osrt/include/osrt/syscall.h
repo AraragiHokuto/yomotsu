@@ -39,9 +39,9 @@ enum __OSRT_SYSCALLS {
         __OSRT_SYSCALL_PORT_REQUEST,
         __OSRT_SYSCALL_PORT_RECEIVE,
         __OSRT_SYSCALL_PORT_RESPONSE,
-        __OSRT_SYSCALL_PROCESS_SPAWN,
-        __OSRT_SYSCALL_PROCESS_EXIT,
-        __OSRT_SYSCALL_PROCESS_WAIT,
+        __OSRT_SYSCALL_THREAD_SPAWN,
+        __OSRT_SYSCALL_THREAD_EXIT,
+        __OSRT_SYSCALL_THREAD_WAIT,
         __OSRT_SYSCALL_REINCARNATE,
         __OSRT_SYSCALL_FUTEX_WAIT,
         __OSRT_SYSCALL_FUTEX_WAKE,
@@ -62,7 +62,7 @@ enum __OSRT_SYSCALLS {
 #include <osrt/futex.h>
 #include <osrt/kobject.h>
 #include <osrt/port.h>
-#include <osrt/process.h>
+#include <osrt/thread.h>
 
 /* XXX to be removed */
 #define AS_CURRENT 0
@@ -85,9 +85,9 @@ int64_t   syscall_port_receive(
       size_t buffer_size);
 int64_t syscall_port_response(
     kobject_t request, uint64_t retval, void *ret_data, size_t ret_data_size);
-__osrt_pid_t syscall_process_spawn(kobject_t address_space, void *entry_point);
-void         syscall_process_exit(uint64_t retval) __attribute__((noreturn));
-int64_t      syscall_process_wait(pid_t pid, process_state_t *state);
+__osrt_tid_t syscall_thread_spawn(kobject_t address_space, void *entry_point);
+void         syscall_thread_exit(uint64_t retval) __attribute__((noreturn));
+int64_t      syscall_thread_wait(tid_t tid, thread_state_t *state);
 int64_t      syscall_reincarnate(kobject_t address_space, void *entry)
     __attribute__((noreturn));
 void syscall_futex_wait(void *addr, __osrt_futex_val_t val);

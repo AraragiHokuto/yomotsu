@@ -5,11 +5,11 @@
 #define __RENZAN_OSRT_PORT_H__
 
 #include <osrt/kobject.h>
-#include <osrt/process.h>
+#include <osrt/thread.h>
 #include <osrt/types.h>
 
 struct __osrt_port_request_s {
-        __osrt_pid_t sender_pid;
+        __osrt_tid_t sender_pid;
 
         __osrt_u64 val_small;
 

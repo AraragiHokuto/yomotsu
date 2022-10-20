@@ -23,34 +23,34 @@
  * SOFTWARE.
  */
 
-#ifndef __RENZAN_OSRT_PROCESS_H__
-#define __RENZAN_OSRT_PROCESS_H__
+#ifndef __RENZAN_OSRT_THREAD_H__
+#define __RENZAN_OSRT_THREAD_H__
 
 #include <osrt/types.h>
 
-typedef __osrt_u64 __osrt_pid_t;
+typedef __osrt_u64 __osrt_tid_t;
 
-struct process_state_s {
-        __osrt_pid_t process_id;
+struct thread_state_s {
+        __osrt_tid_t thread_id;
         __osrt_u64   retval;
 };
 
 /* XXX to be removed */
-typedef struct process_state_s process_state_t;
+typedef struct thread_state_s thread_state_t;
 
 /* XXX to be removed */
-typedef __osrt_pid_t pid_t;
+typedef __osrt_tid_t tid_t;
 
 #include <stdbool.h>
 #include <stdint.h>
 
 #include <osrt/memory.h>
 
-__osrt_pid_t process_spawn_from_memory(void *elf, int argc, char **argv);
-bool         process_wait(__osrt_pid_t pid, __osrt_s64 *ret);
+__osrt_tid_t process_spawn_from_memory(void *elf, int argc, char **argv);
+bool         thread_wait(__osrt_tid_t tid, __osrt_s64 *ret);
 
 // pid_t process_spawn_from_memory(void *executable)
-_Noreturn void process_exit(__osrt_s64 retval);
+_Noreturn void thread_exit(__osrt_s64 retval);
 
 #ifdef __RZ_OSRT
 
@@ -80,8 +80,8 @@ typedef struct __libos_process_init_data_s __libos_process_init_data_t;
 
 #ifdef __RZ_KERNEL
 
-typedef __osrt_pid_t pid_t;
+typedef __osrt_tid_t tid_t;
 
 #endif /* __RZ_KERNEL */
 
-#endif /* __RENZAN_OSRT_PROCESS_H__ */
+#endif /* __RENZAN_OSRT_THREAD_H__ */

@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 
-#include <osrt/process.h>
+#include <osrt/thread.h>
 #include <osrt/syscall.h>
 
 typedef void (*__crt_func_ptr_t)(void);
@@ -68,7 +68,7 @@ __attribute__((noreturn)) void
 __exit(int64_t retval)
 {
         __crt_fini();
-        syscall_process_exit(retval);
+        syscall_thread_exit(retval);
 }
 
 int main(int argc, char **argv);

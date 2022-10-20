@@ -32,7 +32,7 @@
 
 #include <osrt/memory.h>
 #include <osrt/misc.h>
-#include <osrt/process.h>
+#include <osrt/thread.h>
 #include <osrt/syscall.h>
 
 /* ELF loader */
@@ -199,9 +199,9 @@ elf_load_from_memory(kobject_t as, void *elf)
 }
 
 _Noreturn void
-process_exit(int64_t retval)
+thread_exit(int64_t retval)
 {
-        syscall_process_exit(retval);
+        syscall_thread_exit(retval);
 }
 
 #define STACK_SIZE (8 * 1024 * 1024) /* 8MB */
@@ -279,10 +279,10 @@ _setup_as_for_proc(kobject_t as, void *elf, int argc, char **argv)
 }
 
 bool
-process_wait(pid_t pid, int64_t *ret)
+thread_wait(tid_t tid, int64_t *ret)
 {
-        process_state_t state;
-        int64_t         syscall_ret = syscall_process_wait(pid, &state);
+        thread_state_t state;
+        int64_t         syscall_ret = syscall_thread_wait(tid, &state);
         if (syscall_ret < 0) {
                 errno = -syscall_ret;
                 return false;
@@ -292,7 +292,7 @@ process_wait(pid_t pid, int64_t *ret)
         return true;
 }
 
-pid_t
+tid_t
 process_spawn_from_memory(void *elf, int argc, char **argv)
 {
         kobject_t as = syscall_as_create();
@@ -307,7 +307,7 @@ process_spawn_from_memory(void *elf, int argc, char **argv)
                 return -1;
         }
 
-        pid_t ret = syscall_process_spawn(as, (void *)entry);
+        tid_t ret = syscall_thread_spawn(as, (void *)entry);
         if (ret < 0) {
                 syscall_as_destroy(as);
                 errno = -ret;

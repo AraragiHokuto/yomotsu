@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include <osrt/port.h>
-#include <osrt/process.h>
+#include <osrt/thread.h>
 
 char *argv[] = {
     "hell", "o wo", "rld eh he he aaaaaaaaaaaa", "aaaaaaaa ",
@@ -28,16 +28,16 @@ __init_main(void)
         port_t port = port_create("/stubinit/testport");
         if (port < 0) {
                 perror("port_create()");
-                process_exit(-1);
+                thread_exit(-1);
         }
 
-        pid_t pid = process_spawn_from_memory(
+        tid_t tid = process_spawn_from_memory(
             _binary_stub_proc_bin_start, sizeof(argv) / sizeof(char *), argv);
 
-        if (pid < 0) {
+        if (tid < 0) {
                 perror("process_spawn_from_memory()");
         } else {
-                printf("process spawned: pid = %ld\n", pid);
+                printf("process spawned: pid = %ld\n", tid);
         }
 
         for (int i = 0; i < 10; ++i) {
@@ -46,7 +46,7 @@ __init_main(void)
                 printf("receiving\n");
                 if (port_receive(port, &buffer, NULL, 0) < 0) {
                         perror("port_receive()");
-                        process_exit(-1);
+                        thread_exit(-1);
                 }
 
                 printf(
@@ -62,7 +62,7 @@ __init_main(void)
         port_close(port);
 
         int64_t retval;
-        if (!process_wait(pid, &retval)) {
+        if (!thread_wait(tid, &retval)) {
                 perror("process_wait()");
         } else if ((int)retval != 0xdeadbeef) {
                 printf("expecting 0xdeadbeef; got 0x%x\n", (int)retval);
@@ -71,7 +71,7 @@ __init_main(void)
         }
 
         printf("exiting init to trigger a panic\n");
-        process_exit(0);
+        thread_exit(0);
 }
 
 int
