@@ -28,16 +28,16 @@
 
 #include <k_list.h>
 
-typedef struct process_s process_t;
+typedef struct thread_s thread_t;
 
 struct sched_percpu_data_s {
-        // process_t *starve_scan_process;
+        // thread_t *starve_scan_process;
         boolean sched_enabled;
 };
 
 typedef struct sched_percpu_data_s sched_percpu_data_t;
 
-enum SCHED_PROC_CLASS {
+enum SCHED_THREAD_CLASS {
         SCHED_CLASS_IDLE,
         SCHED_CLASS_NORMAL,
         SCHED_CLASS_DRIVER,
@@ -45,7 +45,7 @@ enum SCHED_PROC_CLASS {
         SCHED_CLASS_RT_DRIVER,
 };
 
-struct sched_process_data_s {
+struct sched_thread_data_s {
         int class;
         uint cpu;
         uint priority;
@@ -53,14 +53,14 @@ struct sched_process_data_s {
         u64  last_exec;
 };
 
-typedef struct sched_process_data_s sched_process_data_t;
+typedef struct sched_thread_data_s sched_process_data_t;
 
 void sched_init(void);
 void sched_start(void);
-void sched_enter(process_t *proc);
-void sched_set_ready(process_t *proc);
-void sched_set_blocking(process_t *proc);
-void sched_leave(process_t *proc);
+void sched_enter(thread_t *proc);
+void sched_set_ready(thread_t *proc);
+void sched_set_blocking(thread_t *proc);
+void sched_leave(thread_t *proc);
 void sched_resched();
 
 void sched_disable(void);

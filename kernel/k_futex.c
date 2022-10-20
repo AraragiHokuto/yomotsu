@@ -15,7 +15,7 @@ typedef struct futex_bucket_s futex_bucket_t;
 
 struct futex_entry_s {
         uintptr     addr;
-        process_t * proc;
+        thread_t    * th;
         list_node_t node;
 };
 
@@ -63,9 +63,9 @@ futex_wait(address_space_t *as, void *addr, futex_val_t val)
         if (!user_memory_check_read(as, addr, sizeof(futex_val_t))) {
                 /* Access violation */
                 mutex_release(&as->lock);
-                mutex_acquire(&CURRENT_PROCESS->lock);
-                process_terminate(CURRENT_PROCESS);
-                mutex_release(&CURRENT_PROCESS->lock);
+                mutex_acquire(&CURRENT_THREAD->lock);
+                thread_terminate(CURRENT_THREAD);
+                mutex_release(&CURRENT_THREAD->lock);
                 sched_resched();
                 return;
         }
@@ -82,18 +82,18 @@ futex_wait(address_space_t *as, void *addr, futex_val_t val)
         if (atomic_load_u64(*p, __ATOMIC_SEQ_CST) == val) {
                 futex_entry_t entry;
                 entry.addr = paddr;
-                entry.proc = CURRENT_PROCESS;
+                entry.th = CURRENT_THREAD;
                 list_insert(&entry.node, &bucket->head);
 
-                CURRENT_PROCESS->state = PROCESS_STATE_BLOCKED;
-                sched_set_blocking(CURRENT_PROCESS);
+                CURRENT_THREAD->state = THREAD_STATE_SUSPENDED;
+                sched_set_blocking(CURRENT_THREAD);
 
                 mutex_release(&as->lock);
                 spinlock_unlock(&bucket->lock, flag);
 
                 sched_resched();
 
-                ASSERT(CURRENT_PROCESS->state != PROCESS_STATE_BLOCKED);
+                ASSERT(CURRENT_THREAD->state != THREAD_STATE_SUSPENDED);
         } else {
                 --bucket->waiters;
                 spinlock_unlock(&bucket->lock, flag);
@@ -116,17 +116,17 @@ futex_kwait(futex_val_t *addr, futex_val_t val)
         if (atomic_load_u64(*addr, __ATOMIC_SEQ_CST) == val) {
                 futex_entry_t entry;
                 entry.addr = (uintptr)addr;
-                entry.proc = CURRENT_PROCESS;
+                entry.th = CURRENT_THREAD;
                 list_insert(&entry.node, &bucket->head);
 
-                CURRENT_PROCESS->state = PROCESS_STATE_BLOCKED;
-                sched_set_blocking(CURRENT_PROCESS);
+                CURRENT_THREAD->state = THREAD_STATE_SUSPENDED;
+                sched_set_blocking(CURRENT_THREAD);
 
                 spinlock_unlock(&bucket->lock, flag);
 
                 sched_resched();
 
-                ASSERT(CURRENT_PROCESS->state != PROCESS_STATE_BLOCKED);
+                ASSERT(CURRENT_THREAD->state != THREAD_STATE_SUSPENDED);
         } else {
                 --bucket->waiters;
                 spinlock_unlock(&bucket->lock, flag);
@@ -152,8 +152,8 @@ __do_futex_wake(size_t key, u64 addr, uint count)
                 if (entry->addr != addr) { continue; }
 
                 list_remove(&entry->node);
-                entry->proc->state = PROCESS_STATE_READY;
-                sched_set_ready(entry->proc);
+                entry->th->state = THREAD_STATE_READY;
+                sched_set_ready(entry->th);
 
                 --count;
                 --bucket->waiters;
@@ -170,9 +170,9 @@ futex_wake(address_space_t *as, void *addr, size_t count)
         mutex_acquire(&as->lock);
         if (!user_memory_check_read(as, addr, sizeof(futex_val_t))) {
                 mutex_release(&as->lock);
-                mutex_acquire(&CURRENT_PROCESS->lock);
-                process_terminate(CURRENT_PROCESS);
-                mutex_release(&CURRENT_PROCESS->lock);
+                mutex_acquire(&CURRENT_THREAD->lock);
+                thread_terminate(CURRENT_THREAD);
+                mutex_release(&CURRENT_THREAD->lock);
                 return;
         }
 

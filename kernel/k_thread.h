@@ -23,8 +23,8 @@
  * SOFTWARE.
  */
 
-#ifndef __RENZAN_K_PROC_H__
-#define __RENZAN_K_PROC_H__
+#ifndef __RENZAN_K_THREAD_H__
+#define __RENZAN_K_THREAD_H__
 
 #include <k_atomic.h>
 #include <k_futex.h>
@@ -40,20 +40,20 @@
 struct kobject_s;
 typedef struct kobject_s kobject_t;
 
-enum PROCESS_STATE {
-        PROCESS_STATE_READY = 1,
-        PROCESS_STATE_BLOCKED,
-        PROCESS_STATE_EXITED
+enum THREAD_STATE {
+        THREAD_STATE_READY = 1,
+        THREAD_STATE_SUSPENDED,
+        THREAD_STATE_EXITED 
 };
 
-enum PROCESS_EXCEPTION {
-        PROC_EXCEPTION_NONE = 0,
-        PROC_EXCEPTION_DIV_BY_ZERO,
-        PROC_EXCEPTION_PROTECTION,
-        PROC_EXCEPTION_ACCESS_VIOLATION,
+enum THREAD_EXCEPTION {
+        THREAD_EXCEPTION = 0,
+        THREAD_EXCEPTION_DIV_BY_ZERO,
+        THREAD_EXCEPTION_PROTECTION,
+        THREAD_EXCEPTION_ACCESS_VIOLATION,
 };
 
-struct process_s {
+struct thread_s {
         mutex_t lock;
 
         pid_t pid;
@@ -70,7 +70,7 @@ struct process_s {
 
         list_node_t sched_list_node;
 
-        struct process_s *parent;
+        struct thread_s *parent;
         list_node_t       sibling_list_node;
         list_node_t       child_list_head;
 
@@ -89,18 +89,17 @@ struct process_s {
         void *kernel_stack;
 };
 
-typedef struct process_s process_t;
+typedef struct thread_s thread_t;
 
-void process_init(void);
+void       thread_init(void);
+thread_t*  thread_create(thread_t *t, thread_t *parnet);
+void       thread_destroy(thread_t *t);
+void       thread_start(thread_t *t, void *entry, void *data);
+void       thread_switch_context(thread_t *t);
+void       thread_terminate(thread_t *t);
+void       thread_raise_exception(thread_t *t, int exception);
 
-process_t *process_create(process_t *parnet);
-void       process_destroy(process_t *process);
-void       process_start(process_t *process, void *entry, void *data);
-void       process_switch_context(process_t *process);
-void       process_terminate(process_t *process);
-void       process_raise_exception(process_t *process, int exception);
-
-#define CURRENT_PROCESS       (percpu()->current_process)
-#define CURRENT_ADDRESS_SPACE (CURRENT_PROCESS->address_space)
+#define CURRENT_THREAD        (percpu()->current_thread)
+#define CURRENT_ADDRESS_SPACE (CURRENT_THREAD->address_space)
 
 #endif /* __RENZAN_K_PROC_H__ */

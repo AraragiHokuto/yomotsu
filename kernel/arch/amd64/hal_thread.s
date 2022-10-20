@@ -1,9 +1,9 @@
 .section	.text
 
-.global	__process_do_switch
-.type	__process_do_switch, @function
+.global	__thread_do_switch
+.type	__thread_do_switch, @function
 
-__process_do_switch:
+__thread_do_switch:
 	pushq	%rbx
 	pushq	%rbp
 	pushq	%r12
@@ -25,7 +25,7 @@ __process_do_switch:
 _1:
 	popq	%rdi
 
-	call	__process_load_context
+	call	__thread_load_context
 
 	popq	%r15
 	popq	%r14
@@ -36,9 +36,9 @@ _1:
 
 	ret
 
-.global	__process_do_start
-.type	__process_do_start, @function
-__process_do_start:
+.global	__thread_do_start
+.type	__thread_do_start, @function
+__thread_do_start:
 	popq	%rax
 
 	movq	(%rdi), %r9
@@ -59,7 +59,7 @@ __process_do_start:
 
 _2:
 	popq	%rdi
-	call	__process_load_context
+	call	__thread_load_context
 
 	popq	%rdi
 	ret

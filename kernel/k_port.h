@@ -47,7 +47,7 @@ typedef struct port_s port_t;
 
 struct port_server_ref_s {
         port_t *   port;
-        process_t *holder;
+        thread_t *holder;
 
         list_node_t server_queue_node;
         atomic_ptr  req;
@@ -55,7 +55,7 @@ struct port_server_ref_s {
 
 struct port_client_ref_s {
         port_t *   port;
-        process_t *holder;
+        thread_t *holder;
 
         port_request_t req;
 };

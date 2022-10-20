@@ -20,7 +20,7 @@ SRCS	=\
 	k_panic.c	\
 	k_port.c	\
 	k_port_ifce.c	\
-	k_proc.c	\
+	k_thread.c	\
 	k_sched.c	\
 	k_simd.c	\
 	k_spinlock.c	\

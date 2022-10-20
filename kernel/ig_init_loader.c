@@ -5,7 +5,7 @@
 #include <k_cdefs.h>
 #include <k_console.h>
 #include <k_memory.h>
-#include <k_proc.h>
+#include <k_thread.h>
 #include <k_string.h>
 
 #define ELF_MAGIC 0x464c457f
@@ -130,15 +130,15 @@ init_load(address_space_t *as)
 extern void __init_start(void *entry);
 
 void
-init_start(process_t *self)
+init_start(thread_t *self)
 {
         void *entry = init_load(self->address_space);
         VERIFY(entry, "failed to load init at 0x%x", init_begin);
 
         kprintf("init_start(): starting process\n");
 
-        process_start(self, __init_start, entry);
-        self->state = PROCESS_STATE_READY;
+        thread_start(self, __init_start, entry);
+        self->state = THREAD_STATE_READY;
         sched_enter(self);
         sched_start();
 }

@@ -4,7 +4,7 @@
 #include <k_mutex.h>
 #include <k_port.h>
 #include <k_port_ifce.h>
-#include <k_proc.h>
+#include <k_thread.h>
 #include <k_string.h>
 
 #include <osrt/error.h>
@@ -12,7 +12,7 @@
 #define KOBJ_INIT_SIZE 64
 
 boolean
-kobject_init(process_t *proc, int *error)
+kobject_init(thread_t *proc, int *error)
 {
         proc->kobjects = kmem_alloc_zeroed(KOBJ_INIT_SIZE * sizeof(kobject_t));
         if (!proc->kobjects) { *error = ERROR(NOMEM); }
@@ -24,7 +24,7 @@ kobject_init(process_t *proc, int *error)
 }
 
 static boolean
-expand_kobjects(process_t *proc)
+expand_kobjects(thread_t *proc)
 {
         size_t new_kobject_size = proc->kobject_size * 3 / 2;
         kobject_t *new =
@@ -50,7 +50,7 @@ expand_kobjects(process_t *proc)
 
 /* Assume holding process lock */
 kobject_t *
-kobject_alloc_lock(process_t *proc, kobject_handler_t *handler)
+kobject_alloc_lock(thread_t *proc, kobject_handler_t *handler)
 {
         kobject_handler_t i;
         for (i = 0; i < proc->kobject_size; ++i) {
@@ -76,7 +76,7 @@ kobject_alloc_lock(process_t *proc, kobject_handler_t *handler)
 
 /* Assume holding process lock */
 kobject_t *
-kobject_lock_fetch(process_t *proc, kobject_handler_t handler)
+kobject_lock_fetch(thread_t *proc, kobject_handler_t handler)
 {
         if (!handler) { return NULL; }
 
@@ -102,7 +102,7 @@ kobject_free_release(kobject_t *obj)
 }
 
 void
-kobject_cleanup(process_t *proc)
+kobject_cleanup(thread_t *proc)
 {
         for (size_t i = 0; i < proc->kobject_size; ++i) {
                 kobject_t *obj = &proc->kobjects[i];

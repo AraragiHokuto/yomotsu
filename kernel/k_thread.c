@@ -1,4 +1,4 @@
-/* k_proc.c -- Process implementation */
+/* k_proc.c -- thread implementation */
 
 /*
  * Copyright 2021 Mosakuji Hokuto <shikieiki@yamaxanadu.org>.
@@ -30,7 +30,7 @@
 #include <k_kobj.h>
 #include <k_memory.h>
 #include <k_mutex.h>
-#include <k_proc.h>
+#include <k_thread.h>
 #include <k_simd.h>
 #include <k_string.h>
 
@@ -38,20 +38,20 @@
 
 #define KERNEL_STACK_SIZE 16384 /* 16KB */
 
-extern void __process_do_switch(
+extern void __thread_do_switch(
     void *dst_rsp, void *dst_rip, void *src_rsp, void *src_rip,
-    process_t *current);
-extern void __process_do_start(
-    void *rsp, void *rip, void *entry, void *data, process_t *current);
+    thread_t *current);
+extern void __thread_do_start(
+    void *rsp, void *rip, void *entry, void *data, thread_t *current);
 
-process_t *__kernel_proc;
+thread_t *__kernel_proc;
 
-static void __process_on_terminate(void);
+static void __thread_on_terminate(void);
 
 void
-__process_save_context(process_t *target)
+__thread_save_context(thread_t *target)
 {
-        process_t *current = CURRENT_PROCESS;
+        thread_t *current = CURRENT_THREAD;
 
         ASSERT(current != target);
 
@@ -61,22 +61,21 @@ __process_save_context(process_t *target)
         /* save FSBase */
         current->cpu_state.fsbase = rdmsr(0xc0000100);
 
-        __process_do_switch(
+        __thread_do_switch(
             &current->cpu_state.rsp, &current->cpu_state.rip,
             target->cpu_state.rsp, target->cpu_state.rip, current);
 }
 
 void
-__process_load_context(process_t *target)
+__thread_load_context(thread_t *target)
 {
-        /* assume interrupt disabled */
-        process_t *prev = CURRENT_PROCESS;
-        CURRENT_PROCESS = target;
+        thread_t *prev = CURRENT_THREAD;
+        CURRENT_THREAD = target;
 
         ASSERT(prev != target);
 
         if (prev && prev->terminate_flag) {
-                prev->state = PROCESS_STATE_EXITED;
+                prev->state = THREAD_STATE_EXITED;
 
                 /* wake parent in case it's being waited */
                 futex_kwake(&prev->state, 1);
@@ -96,34 +95,34 @@ __process_load_context(process_t *target)
 }
 
 void
-__process_on_sysret(void)
+__thread_on_sysret(void)
 {
         if (atomic_load_boolean(
-                CURRENT_PROCESS->terminate_flag, __ATOMIC_ACQUIRE)) {
-                __process_on_terminate();
+                CURRENT_THREAD->terminate_flag, __ATOMIC_ACQUIRE)) {
+                __thread_on_terminate();
         }
 }
 
 void
-__process_on_user_iret(void)
+__thread_on_user_iret(void)
 {
         if (atomic_load_boolean(
-                CURRENT_PROCESS->terminate_flag, __ATOMIC_ACQUIRE)) {
-                __process_on_terminate();
+                CURRENT_THREAD->terminate_flag, __ATOMIC_ACQUIRE)) {
+                __thread_on_terminate();
         }
 }
 
 void
-process_switch_context(process_t *target)
+thread_switch_context(thread_t *target)
 {
-        __process_save_context(target);
+        __thread_save_context(target);
 }
 
 void
-process_start(process_t *target, void *entry, void *data)
+thread_start(thread_t *target, void *entry, void *data)
 {
         target->cpu_state.rsp = target->kernel_stack;
-        __process_do_start(
+        __thread_do_start(
             &target->cpu_state.rsp, &target->cpu_state.rip, entry, data,
             target);
 }
@@ -197,7 +196,7 @@ free_pid(pid_t pid)
 }
 
 void
-process_init(void)
+thread_init(void)
 {
         kmemset(pid_bitmap, 0, sizeof(pid_bitmap));
         mutex_init(&pid_bitmap_lock);
@@ -220,8 +219,8 @@ process_init(void)
                 kprintf("FSGSBASE not supported\n");
         }
 
-        __kernel_proc = process_create(NULL);
-        VERIFY(__kernel_proc, "failed to allocate kernel process");
+        __kernel_proc = thread_create(NULL, NULL);
+        VERIFY(__kernel_proc, "failed to allocate kernel thread");
 
         __kernel_proc->address_space = vm_address_space_create();
         VERIFY(
@@ -230,13 +229,14 @@ process_init(void)
 }
 
 /* assume holding parent's lock */
-process_t *
-process_create(process_t *parent)
+thread_t*
+thread_create(thread_t *t, thread_t *parent)
 {
+        (void)t;
         pid_t pid = alloc_pid();
         if (!pid) return NULL;
 
-        process_t *ret = kmem_alloc(sizeof(process_t));
+        thread_t *ret = kmem_alloc(sizeof(thread_t));
         if (!ret) {
                 free_pid(pid);
                 return NULL;
@@ -297,78 +297,77 @@ process_create(process_t *parent)
 
 /* assume holding parent's lock */
 void
-process_destroy(process_t *process)
+thread_destroy(thread_t *thread)
 {
-        ASSERT(list_is_empty(&process->child_list_head));
+        ASSERT(list_is_empty(&thread->child_list_head));
 
-        ASSERT(process->parent);
-        list_remove(&process->sibling_list_node);
+        ASSERT(thread->parent);
+        list_remove(&thread->sibling_list_node);
 
-        if (process->address_space
+        if (thread->address_space
             && !atomic_dec_fetch_uint(
-                process->address_space->ref_count, __ATOMIC_ACQ_REL)) {
-                vm_address_space_destroy(process->address_space);
+                thread->address_space->ref_count, __ATOMIC_ACQ_REL)) {
+                vm_address_space_destroy(thread->address_space);
         }
 
-        kmem_free((byte *)process->kernel_stack - KERNEL_STACK_SIZE + 8);
-        simd_free_state_area(process->cpu_state.simd_state);
+        kmem_free((byte *)thread->kernel_stack - KERNEL_STACK_SIZE + 8);
+        simd_free_state_area(thread->cpu_state.simd_state);
 
-        free_pid(process->pid);
-        kmem_free(process);
+        free_pid(thread->pid);
+        kmem_free(thread);
 }
 
-/* Assume holding process lock */
+/* Assume holding thread lock */
 void
-process_terminate(process_t *process)
+thread_terminate(thread_t *thread)
 {
-        atomic_store_boolean(process->terminate_flag, B_TRUE, __ATOMIC_RELEASE);
+        atomic_store_boolean(thread->terminate_flag, B_TRUE, __ATOMIC_RELEASE);
 }
 
 void
-process_raise_exception(process_t *process, int exception)
+thread_raise_exception(thread_t *thread, int exception)
 {
         /* stub */
-        kprintf("Process killed due to exception: %d\n", exception);
-        process_terminate(process);
+        kprintf("thread killed due to exception: %d\n", exception);
+        thread_terminate(thread);
 }
 
 static void
-__process_on_terminate(void)
+__thread_on_terminate(void)
 {
-        if (!CURRENT_PROCESS->parent) {
-                PANIC("process with NULL parent terminated");
+        if (!CURRENT_THREAD->parent) {
+                PANIC("thread with NULL parent terminated");
         }
 
         sched_disable();
 
-        mutex_acquire(&CURRENT_PROCESS->lock);
-        kobject_cleanup(CURRENT_PROCESS);
+        mutex_acquire(&CURRENT_THREAD->lock);
+        kobject_cleanup(CURRENT_THREAD);
+        mutex_acquire(&CURRENT_THREAD->parent->lock);
 
-        mutex_acquire(&CURRENT_PROCESS->parent->lock);
-
-        LIST_FOREACH_MUT(CURRENT_PROCESS->child_list_head, p, __next)
+        LIST_FOREACH_MUT(CURRENT_THREAD->child_list_head, p, __next)
         {
-                process_t *child =
-                    CONTAINER_OF(p, process_t, sibling_list_node);
+                thread_t *child =
+                    CONTAINER_OF(p, thread_t, sibling_list_node);
                 mutex_try_acquire(&child->lock);
-                child->parent = CURRENT_PROCESS->parent;
+                child->parent = CURRENT_THREAD->parent;
                 list_remove(&child->sibling_list_node);
                 list_insert(
                     &child->sibling_list_node,
-                    &CURRENT_PROCESS->parent->child_list_head);
+                    &CURRENT_THREAD->parent->child_list_head);
                 mutex_release(&child->lock);
         }
 
-        ++CURRENT_PROCESS->parent->exited_child_count;
-        futex_kwake(&CURRENT_PROCESS->parent->exited_child_count, 1);
+        ++CURRENT_THREAD->parent->exited_child_count;
+        futex_kwake(&CURRENT_THREAD->parent->exited_child_count, 1);
 
-        mutex_release(&CURRENT_PROCESS->parent->lock);
+        mutex_release(&CURRENT_THREAD->parent->lock);
 
-        mutex_release(&CURRENT_PROCESS->lock);
+        mutex_release(&CURRENT_THREAD->lock);
 
-        sched_leave(CURRENT_PROCESS);
+        sched_leave(CURRENT_THREAD);
         sched_enable();
         sched_resched();
 
-        PANIC("PROCESS_ON_TERMINATE reached end");
+        PANIC("THREAD_ON_TERMINATE reached end");
 }

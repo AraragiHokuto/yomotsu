@@ -33,13 +33,13 @@
 #include <k_memory.h>
 #include <k_port.h>
 #include <k_port_ifce.h>
-#include <k_proc.h>
+#include <k_thread.h>
 #include <k_sched.h>
 #include <k_simd.h>
 #include <k_syscall.h>
 #include <k_timer.h>
 
-void init_start(process_t *self);
+void init_start(thread_t *self);
 
 #define STR(x)  _STR(x)
 #define _STR(x) #x
@@ -75,7 +75,7 @@ ig_entry_bsp(u64 rsdp, u64 xsdp)
         descriptor_init();
         futex_init();
         syscall_init();
-        process_init();
+        thread_init();
         sched_init();
         simd_init();
 
@@ -90,14 +90,14 @@ ig_entry_bsp(u64 rsdp, u64 xsdp)
         address_space_t *as = vm_address_space_create();
         ASSERT(as);
 
-        process_t *proc = process_create(NULL);
-        ASSERT(proc);
-        proc->address_space    = as;
-        proc->sched_data.class = SCHED_CLASS_NORMAL;
+        thread_t *th = thread_create(NULL, NULL);
+        ASSERT(th);
+        th->address_space    = as;
+        th->sched_data.class = SCHED_CLASS_NORMAL;
 
-        vm_address_space_load(proc->address_space);
+        vm_address_space_load(th->address_space);
 
-        init_start(proc);
+        init_start(th);
 
         PANIC("ig_entry_bsp reached bottom!");
 }
@@ -109,7 +109,7 @@ ig_entry_ap(void)
         isr_load();
         interrupt_init_ap();
         syscall_init();
-        process_init();
+        thread_init();
         sched_start();
 
         PANIC("ig_entry_bsp reached bottom!");

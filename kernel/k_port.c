@@ -231,7 +231,7 @@ port_create(const char *name, size_t namelen, int *error)
         }
 
         ref->port   = port;
-        ref->holder = CURRENT_PROCESS;
+        ref->holder = CURRENT_THREAD;
 
         kmemcpy(port->name, name, namelen);
         port->name[namelen]    = '\0';
@@ -300,7 +300,7 @@ port_open(const char *name, size_t namelen, int *error)
                 *error = ERROR(NOMEM);
                 return NULL;
         }
-        ref->holder = CURRENT_PROCESS;
+        ref->holder = CURRENT_THREAD;
 
         port_t *port = port_hash_fetch_inc_rc(name, namelen);
         if (!port) {
@@ -438,17 +438,16 @@ port_receive(port_server_ref_t *ref, void *buf, size_t buflen)
                                 if (copy_ret == 1) {
                                         mutex_acquire(
                                             &ret->sender->holder->lock);
-                                        process_raise_exception(
+                                        thread_raise_exception(
                                             ret->sender->holder,
-                                            PROC_EXCEPTION_ACCESS_VIOLATION);
+                                            THREAD_EXCEPTION_ACCESS_VIOLATION);
                                         mutex_release(
                                             &ret->sender->holder->lock);
                                 } else {
-                                        mutex_acquire(&CURRENT_PROCESS->lock);
-                                        process_raise_exception(
+                                        mutex_acquire(&CURRENT_THREAD->lock);
+                                        thread_raise_exception(
                                             ret->sender->holder,
-                                            PROC_EXCEPTION_ACCESS_VIOLATION);
-                                        mutex_release(&CURRENT_PROCESS->lock);
+                                            THREAD_EXCEPTION_ACCESS_VIOLATION); mutex_release(&CURRENT_THREAD->lock);
                                 }
                         }
                 }
@@ -484,18 +483,15 @@ port_response(
                 if (UNLIKELY(copy_ret != 0)) {
                         if (copy_ret == 1) {
                                 mutex_acquire(&req->sender->holder->lock);
-                                process_raise_exception(
+                                thread_raise_exception(
                                     req->sender->holder,
-                                    PROC_EXCEPTION_ACCESS_VIOLATION);
-                                mutex_release(&req->sender->holder->lock);
-                                *error = ERROR(PORT_REQ_CANCELED);
-                                return;
+                                    THREAD_EXCEPTION_ACCESS_VIOLATION); mutex_release(&req->sender->holder->lock); *error = ERROR(PORT_REQ_CANCELED); return;
                         } else {
-                                mutex_acquire(&CURRENT_PROCESS->lock);
-                                process_raise_exception(
-                                    CURRENT_PROCESS,
-                                    PROC_EXCEPTION_ACCESS_VIOLATION);
-                                mutex_release(&CURRENT_PROCESS->lock);
+                                mutex_acquire(&CURRENT_THREAD->lock);
+                                thread_raise_exception(
+                                    CURRENT_THREAD,
+                                    THREAD_EXCEPTION_ACCESS_VIOLATION);
+                                mutex_release(&CURRENT_THREAD->lock);
                                 return;
                         }
                 }

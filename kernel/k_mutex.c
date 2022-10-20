@@ -8,10 +8,10 @@
 /* stub content for owner field */
 #define STUB_THREAD ((void *)0xffef000000000000)
 
-static process_t *
+static thread_t *
 get_current_proc(void)
 {
-        return CURRENT_PROCESS ? CURRENT_PROCESS : STUB_THREAD;
+        return CURRENT_THREAD ? CURRENT_THREAD : STUB_THREAD;
 }
 
 void

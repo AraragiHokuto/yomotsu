@@ -29,7 +29,7 @@
 #include <k_descriptor.h>
 #include <k_int.h>
 #include <k_memory.h>
-#include <k_proc.h>
+#include <k_thread.h>
 #include <k_sched.h>
 #include <k_timer.h>
 
@@ -41,7 +41,7 @@ typedef struct percpu_data_s {
         gdt_t *gdt;
         tss_t *tss;
 
-        process_t *current_process;
+        thread_t  *current_thread;
         void *     current_kernel_stack;
 
         /* timer heap */

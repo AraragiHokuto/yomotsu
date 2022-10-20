@@ -41,10 +41,10 @@
 s64
 syscall_as_create(void)
 {
-        mutex_acquire(&CURRENT_PROCESS->lock);
+        mutex_acquire(&CURRENT_THREAD->lock);
         kobject_handler_t h;
-        kobject_t *       obj = kobject_alloc_lock(CURRENT_PROCESS, &h);
-        mutex_release(&CURRENT_PROCESS->lock);
+        kobject_t *       obj = kobject_alloc_lock(CURRENT_THREAD, &h);
+        mutex_release(&CURRENT_THREAD->lock);
 
         if (!obj) { return -ERROR(NOMEM); }
 
@@ -71,7 +71,7 @@ as_lock_fetch(kobject_handler_t h)
                 return CURRENT_ADDRESS_SPACE;
         }
 
-        kobject_t *obj = kobject_lock_fetch(CURRENT_PROCESS, h);
+        kobject_t *obj = kobject_lock_fetch(CURRENT_THREAD, h);
 
         if (!obj) return NULL;
 
@@ -90,16 +90,16 @@ as_lock_fetch(kobject_handler_t h)
 s64
 syscall_as_clone(kobject_handler_t src_h)
 {
-        mutex_acquire(&CURRENT_PROCESS->lock);
+        mutex_acquire(&CURRENT_THREAD->lock);
         address_space_t *src = as_lock_fetch(src_h);
         if (!src) {
-                mutex_release(&CURRENT_PROCESS->lock);
+                mutex_release(&CURRENT_THREAD->lock);
                 return -ERROR(INVAL);
         }
 
         kobject_handler_t ret_h;
-        kobject_t *       obj = kobject_alloc_lock(CURRENT_PROCESS, &ret_h);
-        mutex_release(&CURRENT_PROCESS->lock);
+        kobject_t *       obj = kobject_alloc_lock(CURRENT_THREAD, &ret_h);
+        mutex_release(&CURRENT_THREAD->lock);
 
         if (!obj) {
                 mutex_release(&src->lock);
@@ -131,23 +131,23 @@ syscall_as_destroy(kobject_handler_t h)
                 return -ERROR(INVAL);
         }
 
-        mutex_acquire(&CURRENT_PROCESS->lock);
+        mutex_acquire(&CURRENT_THREAD->lock);
         address_space_t *as = as_lock_fetch(h);
-        mutex_release(&CURRENT_PROCESS->lock);
+        mutex_release(&CURRENT_THREAD->lock);
 
         if (!as) { return -ERROR(INVAL); }
 
         if (!(--as->ref_count)) {
-                mutex_acquire(&CURRENT_PROCESS->lock);
+                mutex_acquire(&CURRENT_THREAD->lock);
 
-                kobject_t *obj = kobject_lock_fetch(CURRENT_PROCESS, h);
+                kobject_t *obj = kobject_lock_fetch(CURRENT_THREAD, h);
 
                 mutex_release(&as->lock);
                 vm_address_space_destroy(as);
 
                 kobject_free_release(obj);
 
-                mutex_release(&CURRENT_PROCESS->lock);
+                mutex_release(&CURRENT_THREAD->lock);
         } else {
                 mutex_release(&as->lock);
         }
@@ -171,9 +171,9 @@ syscall_mmap(
 
         if (flag & ~USER_ALLOWED_FLAGS) { return -ERROR(DENIED); }
 
-        mutex_acquire(&CURRENT_PROCESS->lock);
+        mutex_acquire(&CURRENT_THREAD->lock);
         address_space_t *as = as_lock_fetch(as_handler);
-        mutex_release(&CURRENT_PROCESS->lock);
+        mutex_release(&CURRENT_THREAD->lock);
 
         if (!vaddr)
                 vaddr = (uintptr)vm_alloc_vaddr(
@@ -247,17 +247,17 @@ syscall_mtransfer(
 
         if (flag & ~USER_ALLOWED_FLAGS) { return -ERROR(DENIED); }
 
-        mutex_acquire(&CURRENT_PROCESS->lock);
+        mutex_acquire(&CURRENT_THREAD->lock);
         address_space_t *src = as_lock_fetch(sh);
         if (!src) {
-                mutex_release(&CURRENT_PROCESS->lock);
+                mutex_release(&CURRENT_THREAD->lock);
                 return -ERROR(INVAL);
         }
 
         address_space_t *dst = as_lock_fetch(dh);
         if (!dst) {
                 mutex_release(&src->lock);
-                mutex_release(&CURRENT_PROCESS->lock);
+                mutex_release(&CURRENT_THREAD->lock);
                 return -ERROR(INVAL);
         }
 
@@ -268,11 +268,11 @@ syscall_mtransfer(
                 if (!vaddr_d) {
                         mutex_release(&dst->lock);
                         mutex_release(&src->lock);
-                        mutex_release(&CURRENT_PROCESS->lock);
+                        mutex_release(&CURRENT_THREAD->lock);
                         return -ERROR(NOMEM);
                 }
         }
-        mutex_release(&CURRENT_PROCESS->lock);
+        mutex_release(&CURRENT_THREAD->lock);
 
         uintptr si = vaddr_s;
         uintptr di = vaddr_d;
@@ -348,16 +348,16 @@ syscall_port_create(char *name, size_t namelen)
 
         char namebuf[PORT_NAME_MAX_LEN];
         if (!user_memory_read(CURRENT_ADDRESS_SPACE, namebuf, name, namelen)) {
-                process_raise_exception(
-                    CURRENT_PROCESS, PROC_EXCEPTION_ACCESS_VIOLATION);
+                thread_raise_exception(
+                    CURRENT_THREAD, THREAD_EXCEPTION_ACCESS_VIOLATION);
         }
         namebuf[namelen] = '\0';
 
-        mutex_acquire(&CURRENT_PROCESS->lock);
+        mutex_acquire(&CURRENT_THREAD->lock);
         int               error = OK;
         kobject_handler_t h;
-        kobject_t *       obj = kobject_alloc_lock(CURRENT_PROCESS, &h);
-        mutex_release(&CURRENT_PROCESS->lock);
+        kobject_t *       obj = kobject_alloc_lock(CURRENT_THREAD, &h);
+        mutex_release(&CURRENT_THREAD->lock);
 
         if (!obj) { return -ERROR(NOMEM); }
 
@@ -383,15 +383,15 @@ syscall_port_open(char *name, size_t namelen)
 
         char namebuf[PORT_NAME_MAX_LEN];
         if (!user_memory_read(CURRENT_ADDRESS_SPACE, namebuf, name, namelen)) {
-                process_raise_exception(
-                    CURRENT_PROCESS, PROC_EXCEPTION_ACCESS_VIOLATION);
+                thread_raise_exception(
+                    CURRENT_THREAD, THREAD_EXCEPTION_ACCESS_VIOLATION);
         }
         namebuf[namelen] = '\0';
 
-        mutex_acquire(&CURRENT_PROCESS->lock);
+        mutex_acquire(&CURRENT_THREAD->lock);
         kobject_handler_t h;
-        kobject_t *       obj = kobject_alloc_lock(CURRENT_PROCESS, &h);
-        mutex_release(&CURRENT_PROCESS->lock);
+        kobject_t *       obj = kobject_alloc_lock(CURRENT_THREAD, &h);
+        mutex_release(&CURRENT_THREAD->lock);
 
         if (!obj) { return -ERROR(NOMEM); }
 
@@ -431,9 +431,9 @@ syscall_port_open(char *name, size_t namelen)
 s64
 syscall_port_close(kobject_handler_t handler)
 {
-        mutex_acquire(&CURRENT_PROCESS->lock);
-        kobject_t *obj = kobject_lock_fetch(CURRENT_PROCESS, handler);
-        mutex_release(&CURRENT_PROCESS->lock);
+        mutex_acquire(&CURRENT_THREAD->lock);
+        kobject_t *obj = kobject_lock_fetch(CURRENT_THREAD, handler);
+        mutex_release(&CURRENT_THREAD->lock);
 
         if (!obj) { return -ERROR(INVAL); }
 
@@ -459,9 +459,9 @@ syscall_port_close(kobject_handler_t handler)
 s64
 syscall_port_request(kobject_handler_t handler, port_request_user_t *_req)
 {
-        mutex_acquire(&CURRENT_PROCESS->lock);
-        kobject_t *obj = kobject_lock_fetch(CURRENT_PROCESS, handler);
-        mutex_release(&CURRENT_PROCESS->lock);
+        mutex_acquire(&CURRENT_THREAD->lock);
+        kobject_t *obj = kobject_lock_fetch(CURRENT_THREAD, handler);
+        mutex_release(&CURRENT_THREAD->lock);
 
         if (!obj) { return -ERROR(INVAL); }
 
@@ -478,8 +478,8 @@ syscall_port_request(kobject_handler_t handler, port_request_user_t *_req)
         if (!user_memory_read(
                 CURRENT_ADDRESS_SPACE, &user_req, _req,
                 sizeof(port_request_user_t))) {
-                process_raise_exception(
-                    CURRENT_PROCESS, PROC_EXCEPTION_ACCESS_VIOLATION);
+                thread_raise_exception(
+                    CURRENT_THREAD, THREAD_EXCEPTION_ACCESS_VIOLATION);
         }
 
         if (obj->type == KOBJ_TYPE_PORT_IFCE) {
@@ -490,8 +490,8 @@ syscall_port_request(kobject_handler_t handler, port_request_user_t *_req)
                         CURRENT_ADDRESS_SPACE, user_req.data_addr,
                         user_req.data_size)) {
                         mutex_release(&CURRENT_ADDRESS_SPACE->lock);
-                        process_raise_exception(
-                            CURRENT_PROCESS, PROC_EXCEPTION_ACCESS_VIOLATION);
+                        thread_raise_exception(
+                            CURRENT_THREAD, THREAD_EXCEPTION_ACCESS_VIOLATION);
                 }
 
                 if (user_req.retval_addr
@@ -499,8 +499,8 @@ syscall_port_request(kobject_handler_t handler, port_request_user_t *_req)
                         CURRENT_ADDRESS_SPACE, user_req.retval_addr,
                         user_req.retval_size)) {
                         mutex_release(&CURRENT_ADDRESS_SPACE->lock);
-                        process_raise_exception(
-                            CURRENT_PROCESS, PROC_EXCEPTION_ACCESS_VIOLATION);
+                        thread_raise_exception(
+                            CURRENT_THREAD, THREAD_EXCEPTION_ACCESS_VIOLATION);
                 }
                 mutex_release(&CURRENT_ADDRESS_SPACE->lock);
 
@@ -511,8 +511,8 @@ syscall_port_request(kobject_handler_t handler, port_request_user_t *_req)
                 if (!user_memory_write(
                         CURRENT_ADDRESS_SPACE, _req, &user_req,
                         sizeof(port_request_user_t))) {
-                        process_raise_exception(
-                            CURRENT_PROCESS, PROC_EXCEPTION_ACCESS_VIOLATION);
+                        thread_raise_exception(
+                            CURRENT_THREAD, THREAD_EXCEPTION_ACCESS_VIOLATION);
                 }
 
                 mutex_release(&obj->lock);
@@ -538,8 +538,8 @@ syscall_port_request(kobject_handler_t handler, port_request_user_t *_req)
         if (!user_memory_write(
                 CURRENT_ADDRESS_SPACE, _req, &user_req,
                 sizeof(port_request_user_t))) {
-                process_raise_exception(
-                    CURRENT_PROCESS, PROC_EXCEPTION_ACCESS_VIOLATION);
+                thread_raise_exception(
+                    CURRENT_THREAD, THREAD_EXCEPTION_ACCESS_VIOLATION);
         }
 
         return -error;
@@ -550,13 +550,13 @@ syscall_port_receive(
     kobject_handler_t ref_h, port_request_user_t *_req, void *buf,
     size_t buflen)
 {
-        mutex_acquire(&CURRENT_PROCESS->lock);
-        kobject_t *ref_obj = kobject_lock_fetch(CURRENT_PROCESS, ref_h);
+        mutex_acquire(&CURRENT_THREAD->lock);
+        kobject_t *ref_obj = kobject_lock_fetch(CURRENT_THREAD, ref_h);
         if (!ref_obj) {
-                mutex_release(&CURRENT_PROCESS->lock);
+                mutex_release(&CURRENT_THREAD->lock);
                 return -ERROR(INVAL);
         }
-        mutex_release(&CURRENT_PROCESS->lock);
+        mutex_release(&CURRENT_THREAD->lock);
 
         if (ref_obj->type != KOBJ_TYPE_PORT_SERVER_REF) {
                 mutex_release(&ref_obj->lock);
@@ -575,8 +575,8 @@ syscall_port_receive(
         if (!user_memory_write(
                 CURRENT_ADDRESS_SPACE, _req, &user_req,
                 sizeof(port_request_user_t))) {
-                process_raise_exception(
-                    CURRENT_PROCESS, PROC_EXCEPTION_ACCESS_VIOLATION);
+                thread_raise_exception(
+                    CURRENT_THREAD, THREAD_EXCEPTION_ACCESS_VIOLATION);
         }
 
         mutex_release(&ref_obj->lock);
@@ -589,9 +589,9 @@ syscall_port_response(
     kobject_handler_t ref_handler, u64 retval_small, void *retval,
     size_t retval_size)
 {
-        mutex_acquire(&CURRENT_PROCESS->lock);
-        kobject_t *obj = kobject_lock_fetch(CURRENT_PROCESS, ref_handler);
-        mutex_release(&CURRENT_PROCESS->lock);
+        mutex_acquire(&CURRENT_THREAD->lock);
+        kobject_t *obj = kobject_lock_fetch(CURRENT_THREAD, ref_handler);
+        mutex_release(&CURRENT_THREAD->lock);
 
         if (!obj) { return -ERROR(INVAL); }
 
@@ -608,7 +608,7 @@ syscall_port_response(
         return -error;
 }
 
-void __process_spawn_start(void *user_entry);
+void __thread_spawn_start(void *user_entry);
 
 s64
 syscall_process_spawn(kobject_handler_t as_handler, u64 user_entry)
@@ -617,41 +617,41 @@ syscall_process_spawn(kobject_handler_t as_handler, u64 user_entry)
                 /* can not use current address space */
                 return -ERROR(INVAL);
         }
-        mutex_acquire(&CURRENT_PROCESS->lock);
-        process_t *new_proc = process_create(CURRENT_PROCESS);
-        if (!new_proc) {
-                mutex_release(&CURRENT_PROCESS->lock);
+        mutex_acquire(&CURRENT_THREAD->lock);
+        thread_t *new_thread = thread_create(NULL, CURRENT_THREAD);
+        if (!new_thread) {
+                mutex_release(&CURRENT_THREAD->lock);
                 return -ERROR(NOMEM);
         }
 
         address_space_t *as = as_lock_fetch(as_handler);
 
         if (!as) {
-                process_destroy(new_proc);
+                thread_destroy(new_thread);
                 return -ERROR(INVAL);
         }
 
-        mutex_release(&CURRENT_PROCESS->lock);
+        mutex_release(&CURRENT_THREAD->lock);
 
-        new_proc->address_space = as;
+        new_thread->address_space = as;
         ++as->ref_count;
         mutex_release(&as->lock);
 
-        new_proc->state            = PROCESS_STATE_READY;
-        new_proc->sched_data.class = SCHED_CLASS_NORMAL;
-        process_start(new_proc, __process_spawn_start, (void *)user_entry);
-        sched_enter(new_proc);
-        return new_proc->pid;
+        new_thread->state          = THREAD_STATE_READY;
+        new_thread->sched_data.class = SCHED_CLASS_NORMAL;
+        thread_start(new_thread, __thread_spawn_start, (void *)user_entry);
+        sched_enter(new_thread);
+        return new_thread->pid;
 }
 
 s64
 syscall_process_exit(u64 retval)
 {
-        mutex_acquire(&CURRENT_PROCESS->lock);
-        CURRENT_PROCESS->retval = retval;
-        mutex_release(&CURRENT_PROCESS->lock);
+        mutex_acquire(&CURRENT_THREAD->lock);
+        CURRENT_THREAD->retval = retval;
+        mutex_release(&CURRENT_THREAD->lock);
 
-        process_terminate(CURRENT_PROCESS);
+        thread_terminate(CURRENT_THREAD);
 
         /* will never return to userland */
         return OK;
@@ -662,41 +662,41 @@ syscall_process_wait(pid_t pid, process_state_t *_stat)
 {
         process_state_t stat;
 
-        process_t *proc = NULL;
+        thread_t *proc = NULL;
         if (pid == (pid_t)-1) {
                 while (!proc) {
                         futex_val_t exited_child =
-                            CURRENT_PROCESS->exited_child_count;
+                            CURRENT_THREAD->exited_child_count;
 
-                        mutex_acquire(&CURRENT_PROCESS->lock);
-                        LIST_FOREACH(CURRENT_PROCESS->child_list_head, p)
+                        mutex_acquire(&CURRENT_THREAD->lock);
+                        LIST_FOREACH(CURRENT_THREAD->child_list_head, p)
                         {
-                                process_t *pp = CONTAINER_OF(
-                                    p, process_t, sibling_list_node);
+                                thread_t *pp = CONTAINER_OF(
+                                    p, thread_t, sibling_list_node);
                                 if (!atomic_load_boolean(
                                         pp->terminate_flag, __ATOMIC_ACQUIRE)) {
                                         continue;
                                 }
                                 proc = pp;
                         }
-                        mutex_release(&CURRENT_PROCESS->lock);
+                        mutex_release(&CURRENT_THREAD->lock);
 
                         /* wait until there's child exit */
                         futex_kwait(
-                            &CURRENT_PROCESS->exited_child_count, exited_child);
+                            &CURRENT_THREAD->exited_child_count, exited_child);
                 }
         } else {
-                mutex_acquire(&CURRENT_PROCESS->lock);
-                LIST_FOREACH(CURRENT_PROCESS->child_list_head, p)
+                mutex_acquire(&CURRENT_THREAD->lock);
+                LIST_FOREACH(CURRENT_THREAD->child_list_head, p)
                 {
-                        process_t *pp =
-                            CONTAINER_OF(p, process_t, sibling_list_node);
+                        thread_t *pp =
+                            CONTAINER_OF(p, thread_t, sibling_list_node);
 
                         if (pp->pid != pid) { continue; }
 
                         proc = pp;
                 }
-                mutex_release(&CURRENT_PROCESS->lock);
+                mutex_release(&CURRENT_THREAD->lock);
 
                 if (!proc) { return -ERROR(INVAL); }
         }
@@ -704,20 +704,20 @@ syscall_process_wait(pid_t pid, process_state_t *_stat)
         /* wait for process to exit */
         while (B_TRUE) {
                 u64 state = proc->state;
-                if (state == PROCESS_STATE_EXITED) break;
+                if (state == THREAD_STATE_EXITED) break;
                 futex_kwait(&proc->state, state);
         }
 
         stat.process_id = proc->pid;
         stat.retval     = proc->retval;
 
-        process_destroy(proc);
+        thread_destroy(proc);
 
         if (!user_memory_write(
                 CURRENT_ADDRESS_SPACE, _stat, &stat, sizeof(stat))) {
-                mutex_acquire(&CURRENT_PROCESS->lock);
-                process_terminate(CURRENT_PROCESS);
-                mutex_release(&CURRENT_PROCESS->lock);
+                mutex_acquire(&CURRENT_THREAD->lock);
+                thread_terminate(CURRENT_THREAD);
+                mutex_release(&CURRENT_THREAD->lock);
         }
 
         return OK;
@@ -728,19 +728,19 @@ void NORETURN __reincarnate_return(u64 user_entry);
 s64
 syscall_reincarnate(kobject_handler_t as_h, u64 user_entry)
 {
-        mutex_acquire(&CURRENT_PROCESS->lock);
+        mutex_acquire(&CURRENT_THREAD->lock);
 
         address_space_t *as = as_lock_fetch(as_h);
         if (!as) {
-                mutex_release(&CURRENT_PROCESS->lock);
+                mutex_release(&CURRENT_THREAD->lock);
                 return -ERROR(INVAL);
         }
 
         /* unlock and relock to prevent deadlock */
         mutex_release(&as->lock);
 
-        address_space_t *old_as        = CURRENT_PROCESS->address_space;
-        CURRENT_PROCESS->address_space = as;
+        address_space_t *old_as        = CURRENT_THREAD->address_space;
+        CURRENT_THREAD->address_space = as;
 
         mutex_acquire_dual(&old_as->lock, &as->lock);
         ++as->ref_count;
@@ -751,7 +751,7 @@ syscall_reincarnate(kobject_handler_t as_h, u64 user_entry)
 
         vm_address_space_load(as);
 
-        mutex_release(&CURRENT_PROCESS->lock);
+        mutex_release(&CURRENT_THREAD->lock);
 
         __reincarnate_return(user_entry);
         PANIC("should not reach further than __reincarnation_return");

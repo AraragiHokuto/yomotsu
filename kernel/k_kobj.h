@@ -6,7 +6,7 @@
 
 #include <k_atomic.h>
 #include <k_mutex.h>
-#include <k_proc.h>
+#include <k_thread.h>
 
 #include <osrt/kobject.h>
 #include <osrt/types.h>
@@ -27,11 +27,11 @@ struct kobject_s {
         void *  ptr;
 };
 
-boolean    kobject_init(process_t *proc, int *error);
-kobject_t *kobject_alloc_lock(process_t *proc, kobject_handler_t *handler);
-kobject_t *kobject_lock_fetch(process_t *proc, kobject_handler_t handler);
+boolean    kobject_init(thread_t *thread, int *error);
+kobject_t *kobject_alloc_lock(thread_t *thread, kobject_handler_t *handler);
+kobject_t *kobject_lock_fetch(thread_t *thread, kobject_handler_t handler);
 void       kobject_free_release(kobject_t *object);
-void       kobject_cleanup(process_t *proc);
+void       kobject_cleanup(thread_t *thread);
 
 #else /* _KERNEL */
 

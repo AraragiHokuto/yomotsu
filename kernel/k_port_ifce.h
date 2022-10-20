@@ -4,7 +4,7 @@
 #ifndef RENZAN_PORT_IFCE_H__
 #define RENZAN_PORT_IFCE_H__
 
-#include <k_proc.h>
+#include <k_thread.h>
 
 #ifdef _KERNEL
 
