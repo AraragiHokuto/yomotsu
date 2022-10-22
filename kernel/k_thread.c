@@ -55,9 +55,6 @@ __thread_save_context(thread_t *target)
 
         ASSERT(current != target);
 
-        interrupt_save_flag(&current->cpu_state.interrupt_flag);
-        interrupt_disable_preemption();
-
         /* save FSBase */
         current->cpu_state.fsbase = rdmsr(0xc0000100);
 

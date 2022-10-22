@@ -260,7 +260,6 @@ timer_calibrate(void)
 
         /* mask pit again */
         outb(0x21, 0xff);
-        asm volatile("sti");
 
         /* read and return value */
         u64 tsc_end = __do_rdtscp();

@@ -94,7 +94,6 @@ _noswapgs_1:
 
 _noswapgs_2:
 	popq	%rdi
-	sti
 	iretq
 
 .macro irq no

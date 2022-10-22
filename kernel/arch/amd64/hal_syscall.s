@@ -26,9 +26,7 @@ __syscall_entry:
 	# load syscall address
 	movabs	$__syscall_table, %r10
 	movq	(%r10, %rax, 8), %r10
-	sti
 	callq	*%r10
-	cli
 	jmp	__syscall_entry_valid
 
 __syscall_entry_invalid:

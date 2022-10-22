@@ -556,8 +556,6 @@ interrupt_init_bsp(void)
         apic_write_reg(APIC_REG_DEST_FORMAT, 0xFFFFFFFF);
         apic_write_reg(APIC_REG_TASK_PRIORITY, 0x00000000);
 
-        interrupt_enable_preemption();
-
         timer_init_bsp();
 }
 
@@ -577,7 +575,6 @@ interrupt_init_ap(void)
         apic_write_reg(APIC_REG_DEST_FORMAT, 0xFFFFFFFF);
         apic_write_reg(APIC_REG_TASK_PRIORITY, 0x00000000);
 
-        interrupt_enable_preemption();
         timer_init_ap();
 }
 

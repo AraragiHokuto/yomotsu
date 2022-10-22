@@ -447,7 +447,8 @@ port_receive(port_server_ref_t *ref, void *buf, size_t buflen)
                                         mutex_acquire(&CURRENT_THREAD->lock);
                                         thread_raise_exception(
                                             ret->sender->holder,
-                                            THREAD_EXCEPTION_ACCESS_VIOLATION); mutex_release(&CURRENT_THREAD->lock);
+                                            THREAD_EXCEPTION_ACCESS_VIOLATION);
+                                        mutex_release(&CURRENT_THREAD->lock);
                                 }
                         }
                 }
@@ -485,7 +486,10 @@ port_response(
                                 mutex_acquire(&req->sender->holder->lock);
                                 thread_raise_exception(
                                     req->sender->holder,
-                                    THREAD_EXCEPTION_ACCESS_VIOLATION); mutex_release(&req->sender->holder->lock); *error = ERROR(PORT_REQ_CANCELED); return;
+                                    THREAD_EXCEPTION_ACCESS_VIOLATION);
+                                mutex_release(&req->sender->holder->lock);
+                                *error = ERROR(PORT_REQ_CANCELED);
+                                return;
                         } else {
                                 mutex_acquire(&CURRENT_THREAD->lock);
                                 thread_raise_exception(
