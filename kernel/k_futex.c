@@ -75,8 +75,7 @@ futex_wait(address_space_t *as, void *addr, futex_val_t val)
 
         /* enqueue */
         futex_bucket_t *bucket = &futex_hash[futex_calc_hash(paddr)];
-        irqflag_t       flag;
-        spinlock_lock(&bucket->lock, &flag);
+        spinlock_lock(&bucket->lock);
         ++bucket->waiters;
 
         if (atomic_load_u64(*p, __ATOMIC_SEQ_CST) == val) {
@@ -89,14 +88,14 @@ futex_wait(address_space_t *as, void *addr, futex_val_t val)
                 sched_set_blocking(CURRENT_THREAD);
 
                 mutex_release(&as->lock);
-                spinlock_unlock(&bucket->lock, flag);
+                spinlock_unlock(&bucket->lock);
 
                 sched_resched();
 
                 ASSERT(CURRENT_THREAD->state != THREAD_STATE_SUSPENDED);
         } else {
                 --bucket->waiters;
-                spinlock_unlock(&bucket->lock, flag);
+                spinlock_unlock(&bucket->lock);
                 mutex_release(&as->lock);
         }
 }
@@ -107,8 +106,7 @@ futex_kwait(futex_val_t *addr, futex_val_t val)
         futex_bucket_t *bucket =
             &futex_hash[futex_calc_hash((uintptr)addr) + futex_size];
 
-        irqflag_t flag;
-        spinlock_lock(&bucket->lock, &flag);
+        spinlock_lock(&bucket->lock);
 
         atomic_inc_fetch_uint(bucket->waiters, __ATOMIC_SEQ_CST);
         /* --- barrier --- */
@@ -122,14 +120,14 @@ futex_kwait(futex_val_t *addr, futex_val_t val)
                 CURRENT_THREAD->state = THREAD_STATE_SUSPENDED;
                 sched_set_blocking(CURRENT_THREAD);
 
-                spinlock_unlock(&bucket->lock, flag);
+                spinlock_unlock(&bucket->lock);
 
                 sched_resched();
 
                 ASSERT(CURRENT_THREAD->state != THREAD_STATE_SUSPENDED);
         } else {
                 --bucket->waiters;
-                spinlock_unlock(&bucket->lock, flag);
+                spinlock_unlock(&bucket->lock);
         }
 }
 
@@ -143,8 +141,7 @@ __do_futex_wake(size_t key, u64 addr, uint count)
         if (!atomic_load_uint(bucket->waiters, __ATOMIC_SEQ_CST)) { return; }
         /* --- barrier --- */
 
-        irqflag_t flag;
-        spinlock_lock(&bucket->lock, &flag);
+        spinlock_lock(&bucket->lock);
 
         LIST_FOREACH_MUT(bucket->head, p, __next)
         {
@@ -161,7 +158,7 @@ __do_futex_wake(size_t key, u64 addr, uint count)
                 if (!bucket->waiters || !count) break;
         }
 
-        spinlock_unlock(&bucket->lock, flag);
+        spinlock_unlock(&bucket->lock);
 }
 
 void

@@ -93,25 +93,23 @@ static void
 __do_sched_set_ready(thread_t *th)
 {
         uint      cpu = sched_pick_cpu(th);
-        irqflag_t flag;
-        spinlock_lock(&queue[cpu].lock, &flag);
+        spinlock_lock(&queue[cpu].lock);
         list_insert(
             &th->sched_list_node,
             queue[cpu].ready_list[th->sched_data.priority].prev);
         queue[cpu].thread_count++;
         th->sched_data.cpu = cpu;
-        spinlock_unlock(&queue[cpu].lock, flag);
+        spinlock_unlock(&queue[cpu].lock);
 }
 
 static void
 __do_sched_remove_ready(thread_t *th)
 {
         uint      cpu = th->sched_data.cpu;
-        irqflag_t flag;
-        spinlock_lock(&queue[cpu].lock, &flag);
+        spinlock_lock(&queue[cpu].lock);
         list_remove(&th->sched_list_node);
         queue[cpu].thread_count--;
-        spinlock_unlock(&queue[cpu].lock, flag);
+        spinlock_unlock(&queue[cpu].lock);
 }
 
 #define UNIT_QUANTUM_NORMAL    20
@@ -280,14 +278,13 @@ sched_tick(void *_data)
 
         timer_set_timeout(10, sched_tick, NULL);
 
-        irqflag_t flag;
-        spinlock_lock(&CURRENT_QUEUE->lock, &flag);
+        spinlock_lock(&CURRENT_QUEUE->lock);
 
         if (sched_should_preempt()) {
                 thread_t *next = sched_pick_next();
                 ASSERT(next != CURRENT_THREAD);
                 __do_sched_update_position(CURRENT_THREAD);
-                spinlock_unlock(&CURRENT_QUEUE->lock, flag);
+                spinlock_unlock(&CURRENT_QUEUE->lock);
 
                 sched_disable();
                 next->sched_data.quantum = get_quantum(next);
@@ -301,7 +298,7 @@ sched_tick(void *_data)
                 __do_sched_update_position(CURRENT_THREAD);
                 thread_t *next = sched_pick_next();
                 if (next != CURRENT_THREAD) {
-                        spinlock_unlock(&CURRENT_QUEUE->lock, flag);
+                        spinlock_unlock(&CURRENT_QUEUE->lock);
 
                         sched_disable();
                         next->sched_data.quantum = get_quantum(next);
@@ -310,7 +307,7 @@ sched_tick(void *_data)
                 }
         }
 
-        spinlock_unlock(&CURRENT_QUEUE->lock, flag);
+        spinlock_unlock(&CURRENT_QUEUE->lock);
 }
 
 void
@@ -318,10 +315,9 @@ sched_resched(void)
 {
         if (UNLIKELY(!percpu()->sched_data.sched_enabled)) { return; }
 
-        irqflag_t flag;
-        spinlock_lock(&CURRENT_QUEUE->lock, &flag);
+        spinlock_lock(&CURRENT_QUEUE->lock);
         thread_t *next = sched_pick_next();
-        spinlock_unlock(&CURRENT_QUEUE->lock, flag);
+        spinlock_unlock(&CURRENT_QUEUE->lock);
 
         ASSERT(next->state == THREAD_STATE_READY);
         next->sched_data.quantum = get_quantum(next);
@@ -341,13 +337,12 @@ sched_start(void)
         idle_th->sched_data.quantum  = get_quantum(idle_th);
         idle_th->state               = THREAD_STATE_READY;
 
-        irqflag_t flag;
-        spinlock_lock(&queue[smp_current_cpu_id()].lock, &flag);
+        spinlock_lock(&queue[smp_current_cpu_id()].lock);
         list_insert(
             &idle_th->sched_list_node,
             &queue[smp_current_cpu_id()].ready_list[0]);
         __thread_load_context(idle_th);
-        spinlock_unlock(&queue[smp_current_cpu_id()].lock, flag);
+        spinlock_unlock(&queue[smp_current_cpu_id()].lock);
 
         kprintf(
             "sched_start(): starting sched on CPU%d\n", smp_current_cpu_id());

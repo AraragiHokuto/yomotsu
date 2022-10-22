@@ -150,8 +150,7 @@ kvprintf(__builtin_va_list ap, const char *fmt)
         u8 fg = CON_COLOR_LIGHT_GRAY;
         u8 bg = CON_COLOR_BLACK;
 
-        irqflag_t flag;
-        spinlock_lock(&lock, &flag);
+        spinlock_lock(&lock);
 
         while (*p != '\0') {
                 if (*p != '%') {
@@ -274,5 +273,5 @@ output_int:
 
         if (p != rs) { con_write(fg, bg, rs, p - rs); }
 
-        spinlock_unlock(&lock, flag);
+        spinlock_unlock(&lock);
 }
