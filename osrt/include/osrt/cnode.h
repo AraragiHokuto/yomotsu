@@ -1,7 +1,7 @@
-/* errno.h -- Errors */
+/* cnode.h -- CNode definitions */
 
 /*
- * Copyright 2021 Mosakuji Hokuto <shikieiki@yamaxanadu.org>.
+ * Copyright 2022 Tenhouin Youkou <youkou@tenhou.in>.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,30 +23,18 @@
  * SOFTWARE.
  */
 
-#ifndef __RENZAN_CSTD_ERRNO_H__
-#define __RENZAN_CSTD_ERRNO_H__
+#ifndef __RENZAN_OSRT_CNODE_H__
+#define __RENZAN_OSRT_CNODE_H__
 
-#include <osrt/error.h>
+#include <osrt/types.h>
+#include <osrt/cdefs.h>
 
-#define __ERROR_OFFSET(no) (__OSRT_PF_MNAME(ERROR_END) + no)
+enum __OSRT_CNODE_PERMS {
+	__OSRT_PF_MNAME(CNODE_PERM_ACCESS),
+	__OSRT_PF_MNAME(CNODE_PERM_MODIFY),
+};
 
-/* kernel -> POSIX error code mapping */
-#define _OK    __OSRT_PF_MNAME(OK)
-#define EINVAL __OSRT_PF_MNAME(ERROR_INVAL)
-#define ENOENT __OSRT_PF_MNAME(ERROR_NOENT)
-#define ENOMEM __OSRT_PF_MNAME(ERROR_NOMEM)
-#define EPERM  __OSRT_PF_MNAME(ERROR_DENIED)
+typedef __osrt_uintptr __OSRT_PF_TNAME(cnode_addr_t);
 
-/* stdc error code */
-#define EDOM      __ERROR_OFFSET(1)
-#define EILSEQ    __ERROR_OFFSET(2)
-#define ERANGE    __ERROR_OFFSET(3)
-#define EOVERFLOW __ERROR_OFFSET(4)
+#endif /* __RENZAN_OSRT_CNODE_H__ */
 
-/* TODO: generate POSIX error codes */
-
-int *__get_errno(void);
-
-#define errno (*__get_errno())
-
-#endif /* __RENZAN_CSTD_ERRNO_H__ */

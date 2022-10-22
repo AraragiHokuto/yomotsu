@@ -1,7 +1,7 @@
-/* errno.h -- Errors */
+/* cap.h -- Capability definitions */
 
 /*
- * Copyright 2021 Mosakuji Hokuto <shikieiki@yamaxanadu.org>.
+ * Copyright 2022 Tenhouin Youkou <youkou@tenhou.in>.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,30 +23,29 @@
  * SOFTWARE.
  */
 
-#ifndef __RENZAN_CSTD_ERRNO_H__
-#define __RENZAN_CSTD_ERRNO_H__
+#ifndef __RENZAN_OSRT_CAP_H__
+#define __RENZAN_OSRT_CAP_H__
 
-#include <osrt/error.h>
+#include <osrt/cdefs.h>
+#include <osrt/types.h>
 
-#define __ERROR_OFFSET(no) (__OSRT_PF_MNAME(ERROR_END) + no)
+#define __OSRT_CAP_TYPE(type) __OSRT_PF_MNAME(CAP_TYPE_##type)
 
-/* kernel -> POSIX error code mapping */
-#define _OK    __OSRT_PF_MNAME(OK)
-#define EINVAL __OSRT_PF_MNAME(ERROR_INVAL)
-#define ENOENT __OSRT_PF_MNAME(ERROR_NOENT)
-#define ENOMEM __OSRT_PF_MNAME(ERROR_NOMEM)
-#define EPERM  __OSRT_PF_MNAME(ERROR_DENIED)
+/* Capability types */
+enum __OSRT_CAP_TYPES {
+	__OSRT_CAP_TYPE(NULL) = 0,
+	__OSRT_CAP_TYPE(UNTYPED), /* Untyped physical memory */
+	__OSRT_CAP_TYPE(FRAME),	/* Page frame */
+	__OSRT_CAP_TYPE(ENDPOINT), /* IPC Endpoint */
+	__OSRT_CAP_TYPE(CNODE),	   /* Container of capabilities */
+	__OSRT_CAP_TYPE(COUNT)
+};
 
-/* stdc error code */
-#define EDOM      __ERROR_OFFSET(1)
-#define EILSEQ    __ERROR_OFFSET(2)
-#define ERANGE    __ERROR_OFFSET(3)
-#define EOVERFLOW __ERROR_OFFSET(4)
+/* Capability permission list */
+typedef __osrt_u64 __OSRT_PF_TNAME(cap_perms_t);
+typedef __osrt_u64 __OSRT_PF_TNAME(cap_type_t);
 
-/* TODO: generate POSIX error codes */
+/* Capability permission entry */
+typedef __osrt_uint __OSRT_PF_TNAME(cap_perm_entry_t);
 
-int *__get_errno(void);
-
-#define errno (*__get_errno())
-
-#endif /* __RENZAN_CSTD_ERRNO_H__ */
+#endif /* __RENZAN_OSRT_CAP_H__ */

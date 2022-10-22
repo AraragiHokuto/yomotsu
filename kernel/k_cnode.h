@@ -1,7 +1,7 @@
-/* errno.h -- Errors */
+/* k_cnode.h -- CNode and CNode capabilities */
 
 /*
- * Copyright 2021 Mosakuji Hokuto <shikieiki@yamaxanadu.org>.
+ * Copyright 2022 Tenhouin Youkou <youkou@tenhou.in>.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,30 +23,27 @@
  * SOFTWARE.
  */
 
-#ifndef __RENZAN_CSTD_ERRNO_H__
-#define __RENZAN_CSTD_ERRNO_H__
+#ifndef __RENZAN_K_CNODE_H__
+#define __RENZAN_K_CNODE_H__
 
-#include <osrt/error.h>
+#include <k_atomic.h>
+#include <k_cap.h>
 
-#define __ERROR_OFFSET(no) (__OSRT_PF_MNAME(ERROR_END) + no)
+#include <osrt/cnode.h>
 
-/* kernel -> POSIX error code mapping */
-#define _OK    __OSRT_PF_MNAME(OK)
-#define EINVAL __OSRT_PF_MNAME(ERROR_INVAL)
-#define ENOENT __OSRT_PF_MNAME(ERROR_NOENT)
-#define ENOMEM __OSRT_PF_MNAME(ERROR_NOMEM)
-#define EPERM  __OSRT_PF_MNAME(ERROR_DENIED)
+struct cnode_s {
+        atomic_uint ref_count; /* reference count */
+        /* Order of the size of cnode
+         * e.g. size == 256 == 2^8, then order == 8 */
+        size_t order;
+        cap_t  caps[];
+};
 
-/* stdc error code */
-#define EDOM      __ERROR_OFFSET(1)
-#define EILSEQ    __ERROR_OFFSET(2)
-#define ERANGE    __ERROR_OFFSET(3)
-#define EOVERFLOW __ERROR_OFFSET(4)
+typedef struct cnode_s cnode_t;
 
-/* TODO: generate POSIX error codes */
+void   cnode_init(cap_t *cnode, size_t cnode_size);
+void   cnode_mint(cap_t *dst, cap_t *src, error_t *err);
+void   cnode_delete(cap_t *cap);
+cap_t *cnode_lookup_and_lock(cap_t *root, cnode_addr_t addr, error_t *err);
 
-int *__get_errno(void);
-
-#define errno (*__get_errno())
-
-#endif /* __RENZAN_CSTD_ERRNO_H__ */
+#endif /* __RENZAN_K_CNODE_H__ */

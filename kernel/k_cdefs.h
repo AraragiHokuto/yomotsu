@@ -26,6 +26,7 @@ void __panic(
 
 #define PANIC(fmt, ...) \
         __panic(__FILE__, __LINE__, __FUNCTION__, fmt, ##__VA_ARGS__)
+#define UNREACHABLE PANIC("Reached unreachable")
 
 #ifdef _KDEBUG
 #define ASSERT(x)                                                \

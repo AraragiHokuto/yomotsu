@@ -1,7 +1,7 @@
-/* errno.h -- Errors */
+/* k_tree.h -- Unordered tree implementation */
 
 /*
- * Copyright 2021 Mosakuji Hokuto <shikieiki@yamaxanadu.org>.
+ * Copyright 2022 Tenhouin Youkou <youkou@tenhou.in>.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,30 +23,11 @@
  * SOFTWARE.
  */
 
-#ifndef __RENZAN_CSTD_ERRNO_H__
-#define __RENZAN_CSTD_ERRNO_H__
+#ifndef __RENZAN_K_TREE_H__
+#define __RENZAN_K_TREE_H__
 
-#include <osrt/error.h>
+#include <k_list.h>
 
-#define __ERROR_OFFSET(no) (__OSRT_PF_MNAME(ERROR_END) + no)
 
-/* kernel -> POSIX error code mapping */
-#define _OK    __OSRT_PF_MNAME(OK)
-#define EINVAL __OSRT_PF_MNAME(ERROR_INVAL)
-#define ENOENT __OSRT_PF_MNAME(ERROR_NOENT)
-#define ENOMEM __OSRT_PF_MNAME(ERROR_NOMEM)
-#define EPERM  __OSRT_PF_MNAME(ERROR_DENIED)
 
-/* stdc error code */
-#define EDOM      __ERROR_OFFSET(1)
-#define EILSEQ    __ERROR_OFFSET(2)
-#define ERANGE    __ERROR_OFFSET(3)
-#define EOVERFLOW __ERROR_OFFSET(4)
-
-/* TODO: generate POSIX error codes */
-
-int *__get_errno(void);
-
-#define errno (*__get_errno())
-
-#endif /* __RENZAN_CSTD_ERRNO_H__ */
+#endif /* __RENZAN_K_TREE_H__ */

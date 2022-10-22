@@ -19,6 +19,8 @@ typedef u8 atomic_u8;
 
 typedef void *atomic_ptr;
 
+typedef uintptr atomic_uintptr;
+
 #define __ATOMIC_LOAD_IMPL(dst, order)       __atomic_load_n(&dst, order)
 #define __ATOMIC_STORE_IMPL(dst, val, order) __atomic_store_n(&dst, val, order)
 #define __ATOMIC_XCHG_IMPL(dst, val, order) \

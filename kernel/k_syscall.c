@@ -771,8 +771,8 @@ syscall_futex_wake(void *addr, size_t count)
         return OK;
 }
 
-void *__syscall_table[__OSRT_SYSCALL_COUNT];
-uint  __syscall_count       = __OSRT_SYSCALL_COUNT;
+void *__syscall_table[SYSCALL_COUNT];
+uint  __syscall_count       = SYSCALL_COUNT;
 uint  __syscall_invil_error = -ERROR(INVAL);
 
 extern void __syscall_entry(void);
@@ -781,7 +781,7 @@ void
 syscall_def(void)
 {
         /* initialize syscall table */
-#define SYSCALLDEF(__no, __func) __syscall_table[__OSRT_##__no] = __func
+#define SYSCALLDEF(__no, __func) __syscall_table[__no] = __func
         SYSCALLDEF(SYSCALL_AS_CREATE, syscall_as_create);
         SYSCALLDEF(SYSCALL_AS_CLONE, syscall_as_clone);
         SYSCALLDEF(SYSCALL_AS_DESTROY, syscall_as_destroy);

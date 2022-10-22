@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include <osrt/port.h>
-#include <osrt/process.h>
+#include <osrt/thread.h>
 
 #define PS2_PORT_DATA    0x60
 #define PS2_PORT_STATUS  0x64

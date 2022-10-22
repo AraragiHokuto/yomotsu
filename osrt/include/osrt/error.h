@@ -27,33 +27,38 @@
 #define __RENZAN_OSRT_ERROR_H__
 
 #include <osrt/types.h>
+#include <osrt/cdefs.h>
 
 /* Integral type to store an error code */
 typedef __osrt_uint __osrt_error_t;
 
 /* Error code definitions */
 
-enum __OSRT_ERROR_CODES {
-        __OSRT_OK = 0,
-        __OSRT_ERROR_INVAL,
-        __OSRT_ERROR_NOENT,
-        __OSRT_ERROR_NOMEM,
-        __OSRT_ERROR_DENIED,
-        __OSRT_ERROR_TIMEDOUT,
+#define __E(_err) __OSRT_PF_MNAME(ERROR_##_err)
 
-        __OSRT_ERROR_PORT_REQ_CANCELED,
-        __OSRT_ERROR_PORT_REQ_TOO_LONG,
-        __OSRT_ERROR_PORT_NAME_OCCUPIED,
-        __OSRT_ERROR_PORT_CLOSED,
-        __OSRT_ERROR_END
+enum __OSRT_ERROR_CODES {
+        __OSRT_PF_MNAME(OK) = 0,
+        __E(INVAL),
+        __E(NOENT),
+        __E(NOMEM),
+        __E(DENIED),
+        __E(TIMEDOUT),
+	__E(EXIST),
+
+        __E(PORT_REQ_CANCELED),
+        __E(PORT_REQ_TOO_LONG),
+        __E(PORT_NAME_OCCUPIED),
+        __E(PORT_CLOSED),
+	__E(END),
 };
+
+#undef __E
 
 #ifdef __RZ_KERNEL
 
 typedef __osrt_error_t error_t;
 
-#define ERROR(_type) (__OSRT_ERROR_##_type)
-#define OK           __OSRT_OK
+#define ERROR(_type) (ERROR_##_type)
 
 #endif /* __RZ_KERNEL */
 
