@@ -25,7 +25,9 @@
 
 #include <hal_percpu.h>
 #include <k_asm.h>
+#include <k_cap.h>
 #include <k_cdefs.h>
+#include <k_cnode.h>
 #include <k_console.h>
 #include <k_futex.h>
 #include <k_memory.h>
@@ -37,6 +39,153 @@
 
 #include <osrt/error.h>
 #include <osrt/syscall.h>
+
+s64
+syscall_cap_retype(
+    cnode_addr_t dst_addr, cnode_addr_t src_addr, cap_type_t new_type,
+    cap_perms_t perms, size_t size)
+{
+        error_t err;
+
+        if (new_type == CAP_TYPE_NULL || new_type >= CAP_TYPE_COUNT) {
+                /* Invalid cap type */
+                return -ERROR_INVAL;
+        }
+
+        spinlock_lock(&CURRENT_THREAD->root_cnode.guard);
+        err = OK;
+        cap_t *dstc;
+        cap_t *dst = cnode_lookup_and_lock(
+            &CURRENT_THREAD->root_cnode, dst_addr, &dstc, &err);
+        if (err != OK) { return -err; }
+
+        if (dst->type != CAP_TYPE_NULL) {
+                /* Already occupied. Release and return immediately to avoid
+                 * deadlock. */
+                spinlock_unlock(&dstc->guard);
+                spinlock_unlock(&dst->guard);
+                return -ERROR_EXIST;
+        }
+
+        if (!cap_check_perm(dstc, CNODE_PERM_MODIFY)) {
+                /* No permission to modify dst's container */
+                spinlock_unlock(&dstc->guard);
+                spinlock_unlock(&dst->guard);
+                return -ERROR_DENIED;
+        }
+
+        /* We've already ensured dst. Unlocking dstc is safe now. */
+        spinlock_unlock(&dstc->guard);
+
+        spinlock_lock(&CURRENT_THREAD->root_cnode.guard);
+        err        = OK;
+        cap_t *src = cnode_lookup_and_lock(
+            &CURRENT_THREAD->root_cnode, src_addr, NULL, &err);
+        if (err != OK) {
+                spinlock_unlock(&dst->guard);
+                return -err;
+        }
+
+        if (src->type != CAP_TYPE_UNTYPED) {
+                /* src is not an untyped */
+                spinlock_unlock(&dst->guard);
+                spinlock_unlock(&src->guard);
+                return -ERROR_INVAL;
+        }
+
+        /* Do retype. */
+        err = OK;
+        cap_retype(dst, src, new_type, perms, size, &err);
+
+        /* Release both slots and return. */
+        spinlock_unlock(&dst->guard);
+        spinlock_unlock(&src->guard);
+
+        return -err;
+}
+
+s64
+syscall_cap_mint(
+    cnode_addr_t dst_addr, cnode_addr_t src_addr, cap_perms_t new_perms)
+{
+        error_t err;
+
+        spinlock_lock(&CURRENT_THREAD->root_cnode.guard);
+        err = OK;
+        cap_t *dstc;
+        cap_t *dst = cnode_lookup_and_lock(
+            &CURRENT_THREAD->root_cnode, dst_addr, &dstc, &err);
+        if (err != OK) { return -err; }
+
+        if (dst->type != CAP_TYPE_NULL) {
+                /* Already occupied. Release and return immediately to avoid
+                 * deadlock. */
+                spinlock_unlock(&dstc->guard);
+                spinlock_unlock(&dst->guard);
+                return -ERROR_EXIST;
+        }
+
+        if (!cap_check_perm(dstc, CNODE_PERM_MODIFY)) {
+                /* No permission to modify dst's container. */
+                spinlock_unlock(&dstc->guard);
+                spinlock_unlock(&dst->guard);
+                return -ERROR_DENIED;
+        }
+
+        /* We've already ensured dst. Unlocking dstc is safe now. */
+        spinlock_unlock(&dstc->guard);
+
+        spinlock_lock(&CURRENT_THREAD->root_cnode.guard);
+        err        = OK;
+        cap_t *src = cnode_lookup_and_lock(
+            &CURRENT_THREAD->root_cnode, src_addr, NULL, &err);
+        if (err != OK) {
+                spinlock_unlock(&dst->guard);
+                return -err;
+        }
+
+        if (src->type == CAP_TYPE_NULL) {
+                /* src is null cap */
+                spinlock_unlock(&dst->guard);
+                spinlock_unlock(&src->guard);
+                return -ERROR_NOENT;
+        }
+
+        err = OK;
+        cap_mint(dst, src, new_perms, &err);
+
+        spinlock_unlock(&dst->guard);
+        spinlock_unlock(&src->guard);
+        return -err;
+}
+
+s64
+syscall_cap_revoke_childs(cnode_addr_t addr)
+{
+        spinlock_lock(&CURRENT_THREAD->root_cnode.guard);
+        error_t err = OK;
+        cap_t * cap = cnode_lookup_and_lock(
+            &CURRENT_THREAD->root_cnode, addr, NULL, &err);
+        if (err != OK) { return -err; }
+
+        cap_revoke_childs(cap);
+        spinlock_unlock(&cap->guard);
+        return OK;
+}
+
+s64
+syscall_cap_delete(cnode_addr_t addr)
+{
+        spinlock_lock(&CURRENT_THREAD->root_cnode.guard);
+        error_t err = OK;
+        cap_t * cap = cnode_lookup_and_lock(
+            &CURRENT_THREAD->root_cnode, addr, NULL, &err);
+	if (err != OK) { return -err; }
+
+	cap_delete(cap);
+	spinlock_unlock(&cap->guard);
+	return OK;
+}
 
 s64
 syscall_as_create(void)
@@ -637,7 +786,7 @@ syscall_thread_spawn(kobject_handler_t as_handler, u64 user_entry)
         ++as->ref_count;
         mutex_release(&as->lock);
 
-        new_thread->state          = THREAD_STATE_READY;
+        new_thread->state            = THREAD_STATE_READY;
         new_thread->sched_data.class = SCHED_CLASS_NORMAL;
         thread_start(new_thread, __thread_spawn_start, (void *)user_entry);
         sched_enter(new_thread);
@@ -709,7 +858,7 @@ syscall_thread_wait(tid_t tid, thread_state_t *_stat)
         }
 
         stat.thread_id = th->tid;
-        stat.retval     = th->retval;
+        stat.retval    = th->retval;
 
         thread_destroy(th);
 
@@ -739,7 +888,7 @@ syscall_reincarnate(kobject_handler_t as_h, u64 user_entry)
         /* unlock and relock to prevent deadlock */
         mutex_release(&as->lock);
 
-        address_space_t *old_as        = CURRENT_THREAD->address_space;
+        address_space_t *old_as       = CURRENT_THREAD->address_space;
         CURRENT_THREAD->address_space = as;
 
         mutex_acquire_dual(&old_as->lock, &as->lock);
@@ -782,6 +931,10 @@ syscall_def(void)
 {
         /* initialize syscall table */
 #define SYSCALLDEF(__no, __func) __syscall_table[__no] = __func
+	SYSCALLDEF(SYSCALL_CAP_RETYPE, syscall_cap_retype);
+	SYSCALLDEF(SYSCALL_CAP_MINT, syscall_cap_mint);
+	SYSCALLDEF(SYSCALL_CAP_REVOKE_CHILDS, syscall_cap_revoke_childs);
+	SYSCALLDEF(SYSCALL_CAP_DELETE, syscall_cap_delete);
         SYSCALLDEF(SYSCALL_AS_CREATE, syscall_as_create);
         SYSCALLDEF(SYSCALL_AS_CLONE, syscall_as_clone);
         SYSCALLDEF(SYSCALL_AS_DESTROY, syscall_as_destroy);

@@ -30,7 +30,6 @@
 #include <osrt/cdefs.h>
 
 enum __OSRT_CNODE_PERMS {
-	__OSRT_PF_MNAME(CNODE_PERM_ACCESS),
 	__OSRT_PF_MNAME(CNODE_PERM_MODIFY),
 };
 

@@ -27,6 +27,7 @@
 #define __RENZAN_K_THREAD_H__
 
 #include <k_atomic.h>
+#include <k_cap.h>
 #include <k_futex.h>
 #include <k_int.h>
 #include <k_list.h>
@@ -43,7 +44,7 @@ typedef struct kobject_s kobject_t;
 enum THREAD_STATE {
         THREAD_STATE_READY = 1,
         THREAD_STATE_SUSPENDED,
-        THREAD_STATE_EXITED 
+        THREAD_STATE_EXITED
 };
 
 enum THREAD_EXCEPTION {
@@ -60,6 +61,8 @@ struct thread_s {
 
         u64 retval;
 
+        cap_t root_cnode;
+
         address_space_t *address_space;
 
         u64            state;
@@ -71,8 +74,8 @@ struct thread_s {
         list_node_t sched_list_node;
 
         struct thread_s *parent;
-        list_node_t       sibling_list_node;
-        list_node_t       child_list_head;
+        list_node_t      sibling_list_node;
+        list_node_t      child_list_head;
 
         futex_val_t exited_child_count;
 
@@ -91,13 +94,13 @@ struct thread_s {
 
 typedef struct thread_s thread_t;
 
-void       thread_init(void);
-thread_t*  thread_create(thread_t *t, thread_t *parnet);
-void       thread_destroy(thread_t *t);
-void       thread_start(thread_t *t, void *entry, void *data);
-void       thread_switch_context(thread_t *t);
-void       thread_terminate(thread_t *t);
-void       thread_raise_exception(thread_t *t, int exception);
+void      thread_init(void);
+thread_t *thread_create(thread_t *t, thread_t *parnet);
+void      thread_destroy(thread_t *t);
+void      thread_start(thread_t *t, void *entry, void *data);
+void      thread_switch_context(thread_t *t);
+void      thread_terminate(thread_t *t);
+void      thread_raise_exception(thread_t *t, int exception);
 
 #define CURRENT_THREAD        (percpu()->current_thread)
 #define CURRENT_ADDRESS_SPACE (CURRENT_THREAD->address_space)

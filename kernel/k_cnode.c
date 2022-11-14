@@ -113,16 +113,26 @@ cnode_addr_get_indexes(cnode_addr_t addr)
         return addr & ADDR_MASK(CNODEADDR_INDEXES_BITS);
 }
 
+/*
+ * Lookup a capability starting from root. Lock and return it if found.
+ * Optionally a pointer can be passed into `container` to receive the
+ * container of found capability. In this scenario, the capability of the
+ * container will also be locked. If NULL is passed into container, the lock to
+ * the container will be released before return.
+ */
 cap_t *
-cnode_lookup_and_lock(cap_t *root, cnode_addr_t addr, error_t *err)
+cnode_lookup_and_lock(
+    cap_t *root, cnode_addr_t addr, cap_t **container, error_t *err)
 {
         cap_t *p = root;
+        cap_t *c = NULL;
 
         size_t depth   = cnode_addr_get_depth(addr);
         size_t indexes = cnode_addr_get_indexes(addr);
 
         for (size_t i = 0; i < depth; ++i) {
                 if (p->type != CAP_TYPE_CNODE) {
+                        if (c) { spinlock_unlock(&c->guard); }
                         spinlock_unlock(&p->guard);
                         *err = ERROR_INVAL;
                         return NULL;
@@ -135,9 +145,10 @@ cnode_lookup_and_lock(cap_t *root, cnode_addr_t addr, error_t *err)
 
                 cap_t *np = &cnode->caps[idx];
 
+                if (c) { spinlock_unlock(&c->guard); }
                 spinlock_lock(&np->guard);
-                spinlock_unlock(&p->guard);
 
+                c = p;
                 p = np;
         }
 
@@ -145,6 +156,12 @@ cnode_lookup_and_lock(cap_t *root, cnode_addr_t addr, error_t *err)
                 spinlock_unlock(&p->guard);
                 *err = ERROR_INVAL;
                 return NULL;
+        }
+
+        if (container) {
+                *container = c;
+        } else {
+                spinlock_unlock(&c->guard);
         }
 
         return p;

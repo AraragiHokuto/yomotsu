@@ -9,6 +9,8 @@ SRCROOT	= ${REPO_ROOT}/kernel
 SRCS	=\
 	ig_entry.c	\
 	k_acpi.c	\
+	k_cap.c		\
+	k_cnode.c	\
 	k_console.c	\
 	k_descriptor.c	\
 	k_futex.c	\
@@ -21,6 +23,7 @@ SRCS	=\
 	k_port.c	\
 	k_port_ifce.c	\
 	k_thread.c	\
+	k_untyped.c	\
 	k_sched.c	\
 	k_simd.c	\
 	k_spinlock.c	\

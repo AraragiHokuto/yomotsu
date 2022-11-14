@@ -44,6 +44,7 @@ typedef struct cnode_s cnode_t;
 void   cnode_init(cap_t *cnode, size_t cnode_size);
 void   cnode_mint(cap_t *dst, cap_t *src, error_t *err);
 void   cnode_delete(cap_t *cap);
-cap_t *cnode_lookup_and_lock(cap_t *root, cnode_addr_t addr, error_t *err);
+cap_t *cnode_lookup_and_lock(
+    cap_t *root, cnode_addr_t addr, cap_t **container, error_t *err);
 
 #endif /* __RENZAN_K_CNODE_H__ */
