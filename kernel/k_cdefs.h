@@ -20,9 +20,12 @@
  * I know this identifier is reserved for implementation.
  * We are the implementation.
  */
-void __panic(const char *func, uint line, const char *fmt, ...) NORETURN;
+void __panic(
+    const char *file, uint line, const char *func, const char *fmt,
+    ...) NORETURN;
 
-#define PANIC(fmt, ...) __panic(__FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
+#define PANIC(fmt, ...) \
+        __panic(__FILE__, __LINE__, __FUNCTION__, fmt, ##__VA_ARGS__)
 
 #ifdef _KDEBUG
 #define ASSERT(x)                                                \

@@ -1,80 +1,29 @@
+/* k_console.c -- Console driver for kernel debugging */
 
-#include <hal_percpu.h>
+#include <hal_serial.h>
 #include <k_cdefs.h>
 #include <k_console.h>
 #include <k_int.h>
 #include <k_spinlock.h>
 #include <k_string.h>
 
-static con_driver_t *_driver;
+#ifdef _KDEBUG
+
 static spinlock_t    lock;
 
 void
 con_init(void)
 {
         spinlock_init(&lock);
+	serial_init();
 }
 
 void
-con_set_driver(con_driver_t *driver)
+con_write(const char *str, size_t len)
 {
-        ASSERT(driver);
-        _driver = driver;
-}
-
-uint
-con_dim_x(void)
-{
-        ASSERT(_driver);
-        ASSERT(_driver->dim_x);
-        return _driver->dim_x();
-}
-
-uint
-con_dim_y(void)
-{
-        ASSERT(_driver);
-        ASSERT(_driver->dim_y);
-        return _driver->dim_y();
-}
-
-void
-con_write(uint fg, uint bg, const char *str, size_t len)
-{
-        ASSERT(_driver);
-        ASSERT(_driver->write);
-
-        INTERRUPT_CRITICAL_BEGIN
-                {
-                        _driver->write(fg, bg, str, len);
-                }
-        INTERRUPT_CRITICAL_END;
-}
-
-void
-con_scroll(uint lc)
-{
-        ASSERT(_driver);
-        ASSERT(_driver->scroll);
-
-        INTERRUPT_CRITICAL_BEGIN
-                {
-                        _driver->scroll(lc);
-                }
-        INTERRUPT_CRITICAL_END;
-}
-
-void
-con_clear()
-{
-        ASSERT(_driver);
-        ASSERT(_driver->clear);
-
-        INTERRUPT_CRITICAL_BEGIN
-                {
-                        _driver->clear();
-                }
-        INTERRUPT_CRITICAL_END;
+	for (size_t i = 0; i < len; ++i) {
+		serial_write(str[i]);
+	}
 }
 
 static size_t
@@ -147,9 +96,6 @@ kvprintf(__builtin_va_list ap, const char *fmt)
         const char *rs = fmt;
         const char *p  = fmt;
 
-        u8 fg = CON_COLOR_LIGHT_GRAY;
-        u8 bg = CON_COLOR_BLACK;
-
         spinlock_lock(&lock);
 
         while (*p != '\0') {
@@ -159,7 +105,7 @@ kvprintf(__builtin_va_list ap, const char *fmt)
                 }
 
                 /* *p == '%' */
-                con_write(fg, bg, rs, p - rs);
+                con_write(rs, p - rs);
                 ++p;
 
                 switch (*p) {
@@ -190,7 +136,7 @@ fmt_s:
                         ss = kstrlen(KSTRLEN_MAX_SIZE_UNKNOWN, str);
                 }
 
-                con_write(fg, bg, str, ss);
+                con_write(str, ss);
                 rs = p;
                 continue;
 
@@ -252,7 +198,7 @@ output_int:
                         }
                         if (sv < 0) {
                                 value = -sv;
-                                con_write(fg, bg, "-", 1);
+                                con_write("-", 1);
                         } else {
                                 value = sv;
                         }
@@ -266,12 +212,14 @@ output_int:
 
                 char   buf[64];
                 size_t output_len = __itoa(buf, value, base);
-                con_write(fg, bg, buf, output_len);
+                con_write(buf, output_len);
                 rs = p;
                 continue;
         }
 
-        if (p != rs) { con_write(fg, bg, rs, p - rs); }
+        if (p != rs) { con_write(rs, p - rs); }
 
         spinlock_unlock(&lock);
 }
+
+#endif	/* _KDEBUG */

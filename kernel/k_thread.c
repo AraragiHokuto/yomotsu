@@ -154,7 +154,7 @@ tid_bitmap_clear(size_t pos)
 
         ASSERT((tid_bitmap[idx] & (1ull << off)) != 0);
 
-        tid_bitmap[idx] &= ~(1ull << off);
+        tid_bitmap[idx] ^= (1ull << off);
 }
 
 static tid_t
@@ -188,7 +188,7 @@ static void
 free_tid(tid_t tid)
 {
         mutex_acquire(&tid_bitmap_lock);
-        tid_bitmap_clear(tid);
+        tid_bitmap_clear(tid - 1);
         mutex_release(&tid_bitmap_lock);
 }
 

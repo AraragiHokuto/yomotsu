@@ -7,4 +7,4 @@ THIS=$(realpath $0)
 $(dirname $THIS)/os-build "$(realpath $1)"
 $(dirname $THIS)/iso-build "$(realpath $1)"
 
-qemu-system-x86_64 -cdrom renzan.iso -cpu Skylake-Client -smp 4 -m 1G
+qemu-system-x86_64 -s -serial stdio -cdrom renzan.iso -cpu Skylake-Client -smp 4 -m 1G

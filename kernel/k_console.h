@@ -1,46 +1,47 @@
-/* XXX to be removed */
+/* k_console.h -- Debugging console output */
+
 #ifndef __RENZAN_K_CONSOLE_H__
 #define __RENZAN_K_CONSOLE_H__
 
+#include <k_cdefs.h>
+
 #include <osrt/types.h>
 
-enum {
-        CON_COLOR_BLACK         = 0,
-        CON_COLOR_BLUE          = 1,
-        CON_COLOR_GREEN         = 2,
-        CON_COLOR_CYAN          = 3,
-        CON_COLOR_RED           = 4,
-        CON_COLOR_MANGENTA      = 5,
-        CON_COLOR_BROWN         = 6,
-        CON_COLOR_LIGHT_GRAY    = 7,
-        CON_COLOR_DARK_GRAY     = 8,
-        CON_COLOR_LIGHT_BLUE    = 9,
-        CON_COLOR_LIGHT_GREEN   = 10,
-        CON_COLOR_LIGHT_CYAN    = 11,
-        CON_COLOR_LIGHT_RED     = 12,
-        CON_COLOR_LIGHT_MAGENTA = 13,
-        CON_COLOR_YELLOW        = 14,
-        CON_COLOR_WHITE         = 15
-};
-
-typedef struct con_driver_s {
-        uint (*dim_x)();
-        uint (*dim_y)();
-        void (*write)(uint fg, uint bg, const char *str, size_t len);
-        void (*scroll)(uint lc);
-        void (*clear)();
-} con_driver_t;
+#ifdef _KDEBUG
 
 void con_init(void);
-void con_set_driver(con_driver_t *driver);
-
-uint con_dim_x(void);
-uint con_dim_y(void);
-void con_write(uint fg, uint bg, const char *str, size_t len);
-void con_scroll(uint lc);
-void con_clear(void);
+void con_write(const char *str, size_t len);
 
 void kprintf(const char *fmt, ...);
 void kvprintf(__builtin_va_list ap, const char *mt);
+
+#else /* _KDEBUG */
+
+static void
+con_init(void)
+{
+}
+
+static void
+con_write(const char *str, size_t len)
+{
+	DONTCARE(str);
+	DONTCARE(len);
+}
+
+static void
+kprintf(const char *fmt, ...)
+{
+        DONTCARE(fmt);
+}
+
+static void
+kvprintf(__builtin_va_list ap, const char *mt)
+{
+        DONTCARE(ap);
+        DONTCARE(mt);
+}
+
+#endif /* _KDEBUG */
 
 #endif /* __RENZAN_K_CONSOLE_H__ */

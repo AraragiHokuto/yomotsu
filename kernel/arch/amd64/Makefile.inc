@@ -8,7 +8,7 @@ SRCS.amd64	=\
 	arch/amd64/ig_smp.s	\
 	arch/amd64/ig_smp.c	\
 	arch/amd64/ig_init_loader.s	\
-	arch/amd64/ig_vga_text.c	\
+	arch/amd64/hal_serial.c		\
 	arch/amd64/hal_smp.c		\
 	arch/amd64/hal_int.s		\
 	arch/amd64/hal_thread.s		\

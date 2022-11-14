@@ -1,9 +1,10 @@
 /* arch/amd64/ig_smp.c -- Igniter SMP init code */
 
+#include "hal_asm.h"
+
 #include <hal_percpu.h>
 #include <hal_smp.h>
 #include <k_acpi.h>
-#include <k_asm.h>
 #include <k_cdefs.h>
 #include <k_console.h>
 #include <k_int.h>

@@ -4,8 +4,6 @@
 #include <k_memory.h>
 #include <k_string.h>
 
-con_driver_t *vga_text_init();
-
 typedef struct PACKED mb2_info_header_s {
         u32 total_size;
         u32 reserved;
@@ -200,7 +198,6 @@ void
 ig_mb2_c_entry(mb2_info_header_t *mb2_info_header)
 {
         con_init();
-        con_set_driver(vga_text_init());
         kprintf(
             "Multiboot2 header: total %d bytes at 0x%x\n",
             mb2_info_header->total_size, mb2_info_header);

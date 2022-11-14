@@ -111,12 +111,13 @@ __stack_trace(void)
 }
 
 void NORETURN
-__panic(const char *func, uint lineno, const char *fmt, ...)
+__panic(const char *file, uint lineno, const char *func, const char *fmt, ...)
 {
         asm volatile("cli");
         asm volatile("xchgw %bx, %bx"); /* Bochs MAGIC BREAK */
 
-        kprintf("%s:%d:[CPU%d]PANIC:\t", func, lineno, percpu()->cpuid);
+        kprintf(
+            "%s:%d:%s:[CPU%d]PANIC: ", file, lineno, func, percpu()->cpuid);
         __builtin_va_list ap;
         __builtin_va_start(ap, fmt);
 
