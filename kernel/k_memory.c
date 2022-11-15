@@ -39,7 +39,9 @@ pma_init(void)
 void
 _pma_mark_usable(uintptr base, size_t size)
 {
-        if (base + size > pm_upper_limit) { pm_upper_limit = base + size; }
+        if (base + size > pm_upper_limit) {
+                pm_upper_limit = base + size;
+        }
         /* scale base and size into page index */
         base /= KMEM_PAGE_SIZE;
         size /= KMEM_PAGE_SIZE;
@@ -54,7 +56,9 @@ _pma_mark_usable(uintptr base, size_t size)
 void
 _pma_mark_reserved(uintptr base, size_t size)
 {
-        if (base + size > pm_upper_limit) { pm_upper_limit = base + size; }
+        if (base + size > pm_upper_limit) {
+                pm_upper_limit = base + size;
+        }
         /* scale base and size into page index */
         base /= KMEM_PAGE_SIZE;
         size = DIV_CEIL(size, KMEM_PAGE_SIZE);
@@ -284,15 +288,25 @@ get_attrs_by_vma(pde_t *pde)
 {
         uint ret = 0;
 
-        if (pde->present) { ret |= VM_PAGE_PRESENT; }
+        if (pde->present) {
+                ret |= VM_PAGE_PRESENT;
+        }
 
-        if (pde->privileged == 0) { ret |= VM_PAGE_PRIVILEGED; }
+        if (pde->privileged == 0) {
+                ret |= VM_PAGE_PRIVILEGED;
+        }
 
-        if (pde->rw) { ret |= VM_PAGE_WRITABLE; }
+        if (pde->rw) {
+                ret |= VM_PAGE_WRITABLE;
+        }
 
-        if (!pde->nx) { ret |= VM_PAGE_EXECUTABLE; }
+        if (!pde->nx) {
+                ret |= VM_PAGE_EXECUTABLE;
+        }
 
-        if (pde->global) { ret |= VM_PAGE_GLOBAL; }
+        if (pde->global) {
+                ret |= VM_PAGE_GLOBAL;
+        }
 
         return ret;
 }
@@ -315,7 +329,7 @@ vm_alloc_vaddr(
                 }
 
                 boolean valid = B_TRUE;
-                byte *  q;
+                byte   *q;
                 for (q = p; q < p + size; q += KMEM_PAGE_SIZE) {
                         if (vm_is_mapped(as, q)) {
                                 valid = B_FALSE;
@@ -499,7 +513,9 @@ vm_clone_pd(uintptr pd_paddr)
         kmemcpy(dst_pd, src_pd, 4096);
 
         for (size_t i = 0; i < 512; ++i) {
-                if (!src_pd[i].present) { continue; }
+                if (!src_pd[i].present) {
+                        continue;
+                }
 
                 uintptr pm = pma_alloc(PMA_ZONE_ANY);
                 if (!pm) {
@@ -539,7 +555,9 @@ vm_clone_pdp(uintptr pdp_paddr)
         kmemcpy(dst_pdp, src_pdp, 4096);
 
         for (size_t i = 0; i < 512; ++i) {
-                if (!src_pdp[i].present) { continue; }
+                if (!src_pdp[i].present) {
+                        continue;
+                }
 
                 uintptr pm = vm_clone_pd(src_pdp[i].addr << 12);
                 if (!pm) {
@@ -574,7 +592,9 @@ vm_clone_pml4(uintptr src_paddr, uintptr dst_paddr)
          * -- kernel space is shared among all processes
          */
         for (size_t i = 0; i < 256; ++i) {
-                if (!src_pml4[i].present) { continue; }
+                if (!src_pml4[i].present) {
+                        continue;
+                }
 
                 uintptr pm = vm_clone_pdp(src_pml4[i].addr << 12);
                 if (!pm) {
@@ -777,7 +797,11 @@ vm_kern_alloc_anywhere(size_t size)
                 uintptr pma = pma_alloc(PMA_ZONE_ANY);
                 if (!pma) goto rollback;
 
-                if (!vm_kern_map_page(vma, pma)) goto rollback;
+                if (!vm_map_page(
+                        NULL, vma, pma,
+                        VM_PAGE_WRITABLE | VM_PAGE_EXECUTABLE
+                            | VM_PAGE_PRIVILEGED | VM_PAGE_GLOBAL))
+                        goto rollback;
 
                 vma += KMEM_PAGE_SIZE;
                 pma += KMEM_PAGE_SIZE;
@@ -884,7 +908,7 @@ kmem_alloc(size_t size)
         size = ALIGNUP(size, 32);
 
         kheap_chunk_t *p;
-        list_node_t *  i;
+        list_node_t   *i;
         for (i = chunk_list_head.next; i != &chunk_list_head; i = i->next) {
                 p = CONTAINER_OF(i, kheap_chunk_t, chunk_list_node);
 
@@ -943,7 +967,9 @@ kmem_alloc_zeroed(size_t size)
 void *
 kmem_alloc_aligned(size_t size, size_t align)
 {
-        if (align < 32) { return kmem_alloc(size); }
+        if (align < 32) {
+                return kmem_alloc(size);
+        }
 
         void *ptr = kmem_alloc(size + align);
         if (!ptr) return ptr;
@@ -993,7 +1019,9 @@ kmem_free(void *ptr)
         kheap_aligned_header_t *alignh =
             (void *)((byte *)ptr - sizeof(kheap_aligned_header_t));
 
-        if (alignh->magic == KHEAP_MAGIC_ALIGNED) { ptr = alignh->free_ptr; }
+        if (alignh->magic == KHEAP_MAGIC_ALIGNED) {
+                ptr = alignh->free_ptr;
+        }
 
         kheap_chunk_t *chunk = kheap_chunk_from_ptr(ptr);
         VERIFY(
