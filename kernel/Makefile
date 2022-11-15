@@ -42,15 +42,17 @@ CFLAGS	+=\
 .include "src.rules.make"
 
 LDFLAGS	+=\
+	--Map=kernel.map	\
 	${LDFLAGS.${BUILD_ARCH}}
 
 .MAIN: all
 all: kernel.bin .PHONY
 	@echo "Installing kernel to ${SYSTEM_ROOT}"
 	@mkdir -p ${SYSTEM_ROOT}/boot
-	@cp kernel.bin ${SYSTEM_ROOT}/boot/kernel.bin
+	@cp kernel.bin srcmap.bin ${SYSTEM_ROOT}/boot/
 
 kernel.bin: $(OBJS)
 	@echo -e "\tLD\tkernel.bin"
 	@$(LD) $(LDFLAGS) -o kernel.bin $(OBJS)
+	@${REPO_ROOT}/scripts/mmc.pl < kernel.map > srcmap.bin
 

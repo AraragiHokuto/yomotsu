@@ -11,10 +11,10 @@ my $str_table_offset = 8;
 my $str_table_length = 0;
 
 while (my $line = <>) {
-    if ($line =~ /^\s+(0x[0-9a-f]{16})\s+([a-zA-Z_][a-zA-Z0-9_]+)$/) {
+    if ($line =~ /^\s*([0-9a-f]+)\s+([0-9a-f]+)\s+([0-9a-f]+)\s+([0-9]+)\s+([a-zA-Z_][a-zA-Z0-9_]+)$/) {
 	$str_table_offset += 16;
-	$str_table_length += length($2) + 1;
-	push @sym_table, [ hex($1), $2 ];
+	$str_table_length += length($5) + 1;
+	push @sym_table, [ hex($1), $5 ];
     }
 }
 

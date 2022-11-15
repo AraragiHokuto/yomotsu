@@ -19,7 +19,7 @@ SECTIONS
 
 	.rodata ALIGN(4K):
 	{
-		_rodata_begin	=.;
+		_rodata_begin	= .;
 		*(.rodata)
 		_rodata_end	= .;
 	}
