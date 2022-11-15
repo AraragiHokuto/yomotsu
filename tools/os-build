@@ -18,7 +18,7 @@ esac
 
 case $BUILD_TYPE in
     Debug)
-	CFLAGS="-g -D_KDEBUG"
+	CFLAGS="-g -D_KDEBUG -D__RZ_DEBUG"
 	;;
     Release)
 	CLAGS=-O2

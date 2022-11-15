@@ -637,7 +637,7 @@ syscall_thread_spawn(kobject_handler_t as_handler, u64 user_entry)
         ++as->ref_count;
         mutex_release(&as->lock);
 
-        new_thread->state          = THREAD_STATE_READY;
+        new_thread->state            = THREAD_STATE_READY;
         new_thread->sched_data.class = SCHED_CLASS_NORMAL;
         thread_start(new_thread, __thread_spawn_start, (void *)user_entry);
         sched_enter(new_thread);
@@ -709,7 +709,7 @@ syscall_thread_wait(tid_t tid, thread_state_t *_stat)
         }
 
         stat.thread_id = th->tid;
-        stat.retval     = th->retval;
+        stat.retval    = th->retval;
 
         thread_destroy(th);
 
@@ -739,7 +739,7 @@ syscall_reincarnate(kobject_handler_t as_h, u64 user_entry)
         /* unlock and relock to prevent deadlock */
         mutex_release(&as->lock);
 
-        address_space_t *old_as        = CURRENT_THREAD->address_space;
+        address_space_t *old_as       = CURRENT_THREAD->address_space;
         CURRENT_THREAD->address_space = as;
 
         mutex_acquire_dual(&old_as->lock, &as->lock);
@@ -771,6 +771,17 @@ syscall_futex_wake(void *addr, size_t count)
         return OK;
 }
 
+/* === Debugging system calls === */
+
+#ifdef __RZ_DEBUG
+s64
+syscall_debug_print(const void *addr, size_t len)
+{
+        con_write(addr, len);
+        return OK;
+}
+#endif /* __RZ_DEBUG */
+
 void *__syscall_table[__OSRT_SYSCALL_COUNT];
 uint  __syscall_count       = __OSRT_SYSCALL_COUNT;
 uint  __syscall_invil_error = -ERROR(INVAL);
@@ -800,6 +811,11 @@ syscall_def(void)
         SYSCALLDEF(SYSCALL_REINCARNATE, syscall_reincarnate);
         SYSCALLDEF(SYSCALL_FUTEX_WAIT, syscall_futex_wait);
         SYSCALLDEF(SYSCALL_FUTEX_WAKE, syscall_futex_wake);
+
+#ifdef __RZ_DEBUG
+        SYSCALLDEF(SYSCALL_DEBUG_PRINT, syscall_debug_print);
+#endif /* __RZ_DEBUG */
+
 #undef SYSCALLDEF
 }
 

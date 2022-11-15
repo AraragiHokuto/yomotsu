@@ -129,8 +129,7 @@ syscall_thread_spawn(kobject_t address_space, void *entry_point)
             0, 0, 0, 0);
 }
 
-void __attribute__((noreturn))
-syscall_thread_exit(uint64_t retval)
+void __attribute__((noreturn)) syscall_thread_exit(uint64_t retval)
 {
         __do_syscall(__OSRT_SYSCALL_THREAD_EXIT, retval, 0, 0, 0, 0, 0);
         /* dear compiler: we really don't return */
@@ -169,3 +168,13 @@ syscall_futex_wake(void *addr, size_t count)
         __do_syscall(
             __OSRT_SYSCALL_FUTEX_WAIT, (uintptr_t)addr, count, 0, 0, 0, 0);
 }
+
+#ifdef __RZ_DEBUG
+/* Deubgging syscalls */
+void
+syscall_debug_print(const void *addr, size_t len)
+{
+        __do_syscall(
+            __OSRT_SYSCALL_DEBUG_PRINT, (uintptr_t)addr, len, 0, 0, 0, 0);
+}
+#endif /* __RZ_DEBUG */

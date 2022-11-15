@@ -45,6 +45,12 @@ enum __OSRT_SYSCALLS {
         __OSRT_SYSCALL_REINCARNATE,
         __OSRT_SYSCALL_FUTEX_WAIT,
         __OSRT_SYSCALL_FUTEX_WAKE,
+
+#ifdef __RZ_DEBUG
+        /* Debugging syscalls */
+        __OSRT_SYSCALL_DEBUG_PRINT,
+#endif /* __RZ_DEBUG */
+
         __OSRT_SYSCALL_COUNT
 };
 
@@ -92,6 +98,11 @@ int64_t      syscall_reincarnate(kobject_t address_space, void *entry)
     __attribute__((noreturn));
 void syscall_futex_wait(void *addr, __osrt_futex_val_t val);
 void syscall_futex_wake(void *addr, size_t wake_count);
+
+#ifdef __RZ_DEBUG
+/* Debugging syscalls */
+void syscall_debug_print(const void *addr, size_t len);
+#endif /* __RZ_DEBUG */
 
 #endif /* __RZ_OSRT */
 
